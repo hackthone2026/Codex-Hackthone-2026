@@ -1,0 +1,2540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CODEX Dashboard & Database</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  
+  <!-- Toast Notification -->
+  <div id="toast" class="toast">Action completed successfully!</div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="app-sidebar">
+    <div class="sidebar-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="terminal"></i>
+        </div>
+        <span class="brand-title">CODEX</span>
+      </div>
+      <div class="menu-section">
+        <div class="menu-header-bar">
+          <p class="menu-heading">Menu</p>
+          <button class="menu-dots-btn" id="toggle-sidebar-dots-btn" title="Toggle Sidebar Menu">
+            <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>          
+        <div class="menu-items-wrapper" id="menu-items-container">
+          <a href="#" class="nav-item active" data-target="dashboard">
+            <div class="nav-label">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="ecommerce">
+            <div class="nav-label">
+              <i data-lucide="shopping-bag"></i>
+              <span>eCommerce</span>
+            </div>
+            <span class="badge">New</span>
+          </a>
+          <a href="#" class="nav-item" data-target="analytics">
+            <div class="nav-label">
+              <i data-lucide="boxes"></i>
+              <span>Stock & Orders</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="customers">
+            <div class="nav-label">
+              <i data-lucide="users"></i>
+              <span>Customers</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="products">
+            <div class="nav-label">
+              <i data-lucide="package-open"></i>
+              <span>Products</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="payments">
+            <div class="nav-label">
+              <i data-lucide="credit-card"></i>
+              <span>Payment</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="loans">
+            <div class="nav-label">
+              <i data-lucide="landmark"></i>
+              <span>Loan Services</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="documents">
+            <div class="nav-label">
+              <i data-lucide="file-text"></i>
+              <span>Documents</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="msme">
+            <div class="nav-label">
+              <i data-lucide="briefcase"></i>
+              <span>MSME Services</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="msme-support">
+            <div class="nav-label">
+              <i data-lucide="headphones"></i>
+              <span>Help Desk</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="cloud">
+            <div class="nav-label">
+              <i data-lucide="cloud"></i>
+              <span>Cloud Data</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="blogs">
+            <div class="nav-label">
+              <i data-lucide="newspaper"></i>
+              <span>Blog's & News</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="calendar">
+            <div class="nav-label">
+              <i data-lucide="calendar"></i>
+              <span>Calendar</span>
+            </div>
+          </a>
+          <a href="#" class="nav-item" data-target="guide">
+            <div class="nav-label">
+              <i data-lucide="book-open-check"></i>
+              <span>Guide Menu</span>
+            </div>
+            <span class="badge" style="background: rgba(124, 58, 237, 0.12); color: #7C3AED;">Manual</span>
+          </a>
+          <a href="#" class="nav-item" data-target="retail-intelligence">
+            <div class="nav-label">
+              <i data-lucide="brain"></i>
+              <span>Retail Intelligence</span>
+            </div>
+            <span class="badge" style="background: rgba(59, 130, 246, 0.12); color: var(--accent-color);">AI</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper" id="app-main-wrapper">
+     
+    <!-- Top Header -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn menu-toggle-btn" id="topbar-menu-toggle-btn" title="Toggle Sidebar Menu">
+          <i data-lucide="more-horizontal"></i>
+        </button>
+        <div class="search-outer-container">
+          <div class="animated-search-wrapper" id="animated-search-container">
+            <button class="search-trigger-btn" id="search-trigger-btn" title="Search (Ctrl + K)">
+              <i data-lucide="search" class="search-icon"></i>
+            </button>
+            <input type="text" id="global-search" class="expandable-search-input" placeholder="search...." autocomplete="off" />
+            <span class="search-shortcut">Ctrl + K</span>
+          </div>
+          <div id="search-suggestions-box" class="search-suggestions-panel hidden">
+            <div class="suggestions-header">Quick Results & Navigation</div>
+            <div class="suggestions-list" id="suggestions-list-container"></div>
+          </div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <!-- Modern Anime/Chibi Currency Logo -->
+        <div class="relative-wrap" id="currency-widget-wrapper">
+          <button class="currency-anime-orb-btn" id="currency-dropdown-btn" title="Switch Global Currency">
+            <div class="anime-orb-frame">
+              <div class="anime-neon-ring-1"></div>
+              <div class="anime-neon-ring-2"></div>
+              <div class="anime-core-backdrop">
+                <span class="anime-currency-glyph" id="active-currency-symbol">₹</span>
+                <span class="anime-sparkle-dot"></span>
+              </div>
+            </div>
+          </button>
+          
+          <div id="currency-menu-dropdown" class="dropdown-panel dropdown-menu-small hidden">
+            <span class="dropdown-heading">Select Currency</span>
+            <button class="currency-opt active" data-cur="INR" data-sym="₹">INR (₹) - Indian Rupee</button>
+            <button class="currency-opt" data-cur="USD" data-sym="$">USD ($) - US Dollar</button>
+            <button class="currency-opt" data-cur="EUR" data-sym="€">EUR (€) - Euro</button>
+            <button class="currency-opt" data-cur="GBP" data-sym="£">GBP (£) - British Pound</button>
+            <button class="currency-opt" data-cur="JPY" data-sym="¥">JPY (¥) - Japanese Yen</button>
+          </div>
+        </div>
+
+        <!-- Settings with Hover-Bridge -->
+        <div class="relative-wrap" id="settings-hover-wrapper">
+          <button class="icon-btn settings-gear-btn" id="settings-gear-trigger" title="Settings">
+            <i data-lucide="settings"></i>
+          </button>
+          <div id="settings-hover-dropdown" class="dropdown-panel settings-popup-panel hidden">
+            <span class="dropdown-heading">System Settings</span>
+            <a href="#" class="setting-popup-item" data-target="settings">
+              <i data-lucide="sliders" class="w-4 h-4"></i>
+              <span>Preferences & 2FA</span>
+            </a>
+            <button class="setting-popup-item danger" id="reset-db-btn" title="Restore initial demo database">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              <span>Reset Database</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="theme-btn" title="Toggle Theme">
+          <i data-lucide="moon"></i>
+        </button>
+
+        <!-- Notifications with Hover-Bridge -->
+        <div class="relative-wrap" id="notif-wrapper">
+          <button class="icon-btn notif-bell-btn" id="notif-btn" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="notif-badge-counter hidden" id="notif-badge-counter">0</span>
+          </button>
+          
+          <div id="notif-dropdown" class="dropdown-panel notif-popup-panel hidden">
+            <div class="notif-popup-header">
+              <div class="notif-header-title">
+                <i data-lucide="bell-ring" class="w-4 h-4"></i>
+                <span>Database & Activity Logs</span>
+              </div>
+              <span class="notif-tag-count" id="notif-total-records">0 logs</span>
+            </div>
+            <div class="notif-scroll-area" id="notif-list"></div>
+          </div>
+        </div>
+
+        <!-- Topbar Profile Logo -->
+        <button class="topbar-profile-logo-btn" id="topbar-profile-btn" title="Open User Profile & Security">
+          <div class="profile-logo-ring">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" class="user-profile-img" alt="User Profile Logo" />
+            <span class="profile-online-dot"></span>
+          </div>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Body -->
+    <main class="content-container">
+      <!-- ================= SECTION 1: DASHBOARD ================= -->
+<section id="section-dashboard" class="page-section">
+        <div class="welcome-banner">
+          <h2>Welcome back, <span class="user-display-name text-accent">Pratik Narkhede</span> 👋</h2>
+          <p>Live synchronized records from your local storage database.</p>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="metrics-column">
+            <div class="stat-cards-grid">
+             
+              <div class="card stat-card interactive-card clickable-nav-card" id="card-to-customers" data-goto="customers" title="Click to open Customers page">
+                <div class="card-top-action">
+                  <div class="stat-icon"><i data-lucide="users"></i></div>
+                  <div class="corner-arrow-badge" title="Go to Customers"><i data-lucide="arrow-up-right"></i></div>
+                </div>
+                <p class="stat-title">Registered Customers</p>
+                <div class="stat-val-group">
+                  <h3 class="stat-val" id="db-customer-count">3,782</h3>
+                  <span class="trend-badge positive">↑ 11.01%</span>
+                </div>
+              </div>
+
+              <div class="card stat-card interactive-card clickable-nav-card" id="card-to-orders" data-goto="ecommerce" title="Click to view eCommerce customer orders">
+                <div class="card-top-action">
+                  <div class="stat-icon"><i data-lucide="package"></i></div>
+                  <div class="corner-arrow-badge" title="Go to Orders"><i data-lucide="arrow-up-right"></i></div>
+                </div>
+                <p class="stat-title">Orders Processed</p>
+                <div class="stat-val-group">
+                  <h3 class="stat-val" id="db-order-count">5,359</h3>
+                  <span class="trend-badge negative">↓ 9.05%</span>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="card chart-card modern-animated-card">
+              <div class="card-header">
+                <div>
+                  <h4 class="card-title" id="sales-chart-title">Monthly Sales & Revenue Velocity</h4>
+                  <p class="card-subtitle" id="sales-chart-subtitle">Viewing data for: <strong id="sales-selected-date-label">September 2026</strong></p>
+                </div>
+                
+                <div class="sales-header-actions">
+                  <div class="relative-wrap">
+                    <button class="date-picker-btn sales-cal-trigger" id="sales-date-picker-btn" title="Pick Month/Year or Day for Sales">
+                      <i data-lucide="calendar"></i>
+                      <span id="sales-picker-btn-text">Select Date</span>
+                    </button>
+                    <div id="sales-calendar-popup" class="cycle-calendar-popup hidden">
+                      <div class="cal-popup-controls">
+                        <select id="sales-cal-month-select" class="cal-select"></select>
+                        <select id="sales-cal-year-select" class="cal-select"></select>
+                        <button class="cal-close-btn" id="close-sales-cal"><i data-lucide="x"></i></button>
+                      </div>
+                      <div class="cal-popup-weekdays">
+                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                      </div>
+                      <div class="cal-popup-days" id="sales-cal-days"></div>
+                    </div>
+                  </div>
+
+                  <div class="relative-wrap">
+                    <button class="card-action-btn" id="sales-menu-btn" title="Switch Sales Timeline">
+                      <i data-lucide="more-vertical"></i>
+                    </button>
+                    <div id="sales-menu-dropdown" class="dropdown-panel dropdown-menu-small hidden">
+                      <span class="dropdown-heading">Sales View</span>
+                      <button class="sales-select-option" data-view="yearly">Yearly Sales</button>
+                      <button class="sales-select-option active" data-view="monthly">Monthly Sales</button>
+                      <button class="sales-select-option" data-view="day">Day Sales</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="canvas-box modern-animated-chart-wrapper">
+                <canvas id="salesBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monthly Revenue with Animated Bar Chart Linked to View Selector -->
+          <div class="card target-card">
+            <div class="card-header">
+              <div>
+                <h4 class="card-title" id="revenue-period-title">Monthly Revenue</h4>
+                <p class="card-subtitle" id="revenue-period-subtitle">Target set for this calendar month</p>
+              </div>
+              
+              <div class="relative-wrap">
+                <button class="card-action-btn" id="revenue-period-menu-btn" title="Switch Revenue Timeframe">
+                  <i data-lucide="more-vertical"></i>
+                </button>
+                <div id="revenue-period-dropdown" class="dropdown-panel dropdown-menu-small hidden">
+                  <span class="dropdown-heading">Select Revenue View</span>
+                  <button class="period-select-option active" data-period="monthly">Monthly Revenue</button>
+                  <button class="period-select-option" data-period="weekly">Weekly Revenue</button>
+                  <button class="period-select-option" data-period="day">Day Revenue</button>
+                  <button class="period-select-option" data-period="yearly">Yearly Revenue</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="stylish-revenue-bar-section">
+              <div class="revenue-bar-chart-container">
+                <canvas id="monthlyRevenueBarChart"></canvas>
+              </div>
+              <p class="gauge-desc" id="gauge-description-text" style="margin-top: 14px; text-align: center;">
+                Today's revenue is <strong id="db-today-earned">₹274,464.5</strong>, outperforming target velocity.
+              </p>
+            </div>
+
+            <div class="target-footer">
+              <div class="target-metric">
+                <span class="label" id="footer-target-label">Target</span>
+                <p class="val" id="db-monthly-target">₹1,670,000</p>
+              </div>
+              <div class="target-metric border-sides">
+                <span class="label" id="footer-rev-label">Revenue</span>
+                <p class="val" id="db-monthly-revenue">₹1,670,000 <span class="arrow positive">↑</span></p>
+              </div>
+              <div class="target-metric">
+                <span class="label" id="footer-period-label">Today</span>
+                <p class="val" id="db-today-stat">₹274,464.5 <span class="arrow positive">↑</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card line-chart-card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Performance Analysis</h4>
+              <p class="card-subtitle">Aggregated metrics by database transaction logs</p>
+            </div>
+            <div class="filter-controls">
+              <div class="pill-group" id="stats-filter-group">
+                <button class="pill active" data-type="overview">Overview</button>
+                <button class="pill" data-type="sales">Sales</button>
+                <button class="pill" data-type="revenue">Revenue</button>
+              </div>
+              <div class="relative-wrap">
+                <button class="date-picker-btn" id="date-btn" title="Choose specific Year, Month, and Day">
+                  <i data-lucide="calendar"></i>
+                  <span id="date-label">Current Cycle</span>
+                </button>
+                <div id="cycle-calendar-popup" class="cycle-calendar-popup hidden">
+                  <div class="cal-popup-controls">
+                    <select id="perf-cal-month-select" class="cal-select"></select>
+                    <select id="perf-cal-year-select" class="cal-select"></select>
+                    <button class="cal-close-btn" id="close-cycle-cal"><i data-lucide="x"></i></button>
+                  </div>
+                  <div class="cal-popup-weekdays">
+                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                  </div>
+                  <div class="cal-popup-days" id="cycle-cal-days"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="canvas-box-large">
+            <canvas id="statisticsLineChart"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 2: ECOMMERCE ================= -->
+      <section id="section-ecommerce" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>eCommerce Inventory & Orders</h2>
+              <p>Direct relational records stored in the database.</p>
+            </div>
+            <button class="primary-btn" id="add-order-btn">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> New Order
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card">
+            <p class="stat-title">Catalog Inventory</p>
+            <h3 class="stat-val" id="ecom-total-products">1,248</h3>
+          </div>
+          <div class="card stat-card interactive-card">
+            <p class="stat-title">Pending Orders</p>
+            <h3 class="stat-val" id="ecom-pending-orders">34</h3>
+          </div>
+          <div class="card stat-card interactive-card">
+            <p class="stat-title">Completed Orders</p>
+            <h3 class="stat-val" id="ecom-completed-orders">4,980</h3>
+          </div>
+          <div class="card stat-card interactive-card">
+            <p class="stat-title">Refund Allocations</p>
+            <h3 class="stat-val" id="ecom-refunds">₹1,120</h3>
+          </div>
+        </div>
+
+        <div class="card printable-order-card" id="printable-order-section">
+          <div class="card-header no-print">
+            <div>
+              <h4 class="card-title">Customer Orders (<span id="active-order-filter-label">All Orders</span>)</h4>
+              <p class="card-subtitle">Showing filtered database transactions with purchase timestamps</p>
+            </div>
+            <div class="order-table-actions">
+              <div class="relative-wrap">
+                <div class="split-button-group">
+                  <button class="split-btn-main" id="print-orders-btn" title="Print Current Cycle Filter View as A4 Page">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Print (<span id="print-btn-filter-label">All</span>)</span>
+                  </button>
+                  <button class="split-btn-arrow" id="export-dropdown-arrow-btn" title="More Export Options">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div id="export-options-dropdown" class="dropdown-panel dropdown-menu-small hidden">
+                  <button class="export-opt-btn" id="opt-print-a4">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Print Filtered A4</span>
+                  </button>
+                  <button class="export-opt-btn" id="opt-export-excel">
+                    <i data-lucide="sheet" class="w-4 h-4"></i>
+                    <span>Import Excel (.csv / .xls)</span>
+                  </button>
+                </div>
+              </div>
+              <button class="round-cycle-arrow-btn" id="cycle-filter-arrow-btn" title="Cycle Filter: All → Pending → Completed → Cancelled">
+                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div class="print-header-area">
+            <h2>Customer Orders Report</h2>
+            <p>Generated by CODEX on <span id="print-report-date"></span> &bull; Cycle Filter Status: <span id="print-report-filter">All Orders</span></p>
+          </div>
+          <table class="data-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Purchase Date</th>
+                <th>Customer</th>
+                <th>Purchased Item</th>
+                <th>Total</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 3: STOCK & ORDERS ================= -->
+      <section id="section-analytics" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Stock & Orders Management</h2>
+              <p>Warehouse inventory metrics, vendor dispatch pipelines, and modern delivery fulfillment states.</p>
+            </div>
+            <button class="primary-btn" id="add-company-supply-btn">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Supply Record
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon"><i data-lucide="layers"></i></div>
+            </div>
+            <p class="stat-title">Stock Details</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="analytics-stock-details">14,850</h3>
+              <span class="trend-badge positive">Catalog</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon"><i data-lucide="shopping-cart"></i></div>
+            </div>
+            <p class="stat-title">Stock Sold</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="analytics-stock-sold">9,420</h3>
+              <span class="trend-badge positive">₹ 18.2%</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon"><i data-lucide="check-circle"></i></div>
+            </div>
+            <p class="stat-title">Available Stock</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="analytics-stock-available">5,180</h3>
+              <span class="trend-badge positive">In Stock</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
+            </div>
+            <p class="stat-title">Unavailable Stock</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="analytics-stock-unavailable">250</h3>
+              <span class="trend-badge negative">Backordered</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card printable-supply-card" id="printable-supply-section">
+          <div class="card-header no-print">
+            <div>
+              <h4 class="card-title">
+                Company Supply & Wholesale Distribution
+                <span class="active-cycle-badge" id="active-supply-filter-badge">All Supplies</span>
+              </h4>
+              <p class="card-subtitle">Showing procurement milestones and modern delivery timeline statuses</p>
+            </div>
+            <div class="order-table-actions">
+              <div class="relative-wrap">
+                <div class="split-button-group">
+                  <button class="split-btn-main" id="print-supply-btn" title="Print Supply Table to A4 Page">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Print</span>
+                  </button>
+                  <button class="split-btn-arrow" id="export-supply-arrow-btn" title="Export Formats">
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+                  </button>
+                </div>
+                <div id="supply-export-dropdown" class="dropdown-panel dropdown-menu-small hidden">
+                  <button class="export-opt-btn" id="opt-print-supply-a4">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    <span>Print (A4 Format)</span>
+                  </button>
+                  <button class="export-opt-btn" id="opt-export-supply-excel">
+                    <i data-lucide="sheet" class="w-4 h-4"></i>
+                    <span>Import Excel (.csv / .xls)</span>
+                  </button>
+                </div>
+              </div>
+              <button class="round-cycle-arrow-btn" id="cycle-supply-filter-btn" title="Cycle Supply Filter: All → Delivered → In Transit → Pending → Out of Stock">
+                <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+          <div class="print-header-area print-supply-header">
+            <h2>Company Supply & Delivery Schedule Report</h2>
+            <p>Generated by CODEX on <span id="print-supply-date"></span> &bull; Status: <span id="print-supply-filter">ALL SUPPLIES</span></p>
+          </div>
+          <table class="data-table" id="supply-table">
+            <thead>
+              <tr>
+                <th>Company Name</th>
+                <th>Product</th>
+                <th>Purchase Date</th>
+                <th>Delivery Schedule</th>
+                <th>Quantity</th>
+                <th>Gross Price</th>
+                <th>Shipment Status</th>
+              </tr>
+            </thead>
+            <tbody id="supply-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 4: CUSTOMERS ================= -->
+      <section id="section-customers" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Customer Directory</h2>
+              <p>Database table of verified clients and their tiers.</p>
+            </div>
+            <button class="primary-btn" id="add-customer-btn">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> Add Customer
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer Name</th>
+                <th>Contact Email</th>
+                <th>Subscription Tier</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customers-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 5: PRODUCTS ================= -->
+      <section id="section-products" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Products Catalog & Upload Manager</h2>
+              <p>Upload new product inventories, manage specifications, and review catalog items.</p>
+            </div>
+            <button class="primary-btn" id="upload-new-product-btn">
+              <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Product List
+            </button>
+          </div>
+        </div>
+        <div class="products-catalog-container" id="products-catalog-grid"></div>
+      </section>
+
+      <!-- ================= SECTION: PAYMENT MANAGEMENT ================= -->
+      <section id="section-payments" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Payment Transactions & Invoicing</h2>
+              <p>Track all incoming and outgoing financial settlements (Pending & Completed).</p>
+            </div>
+            <div class="filter-controls">
+              <div class="pill-group" id="payment-filter-group">
+                <button class="pill active" data-payfilter="all">All Payments</button>
+                <button class="pill" data-payfilter="completed">Completed</button>
+                <button class="pill" data-payfilter="pending">Pending</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <table class="data-table" id="payments-table">
+            <thead>
+              <tr>
+                <th>Transaction ID</th>
+                <th>Payer / Client</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Payment Status</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: LOAN SERVICES ================= -->
+      <section id="section-loans" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Loan Services & Financial Facilities</h2>
+              <p>Explore available loan schemes, verify eligibility instantly, apply for financing, and calculate EMI.</p>
+            </div>
+            <button class="primary-btn" onclick="navigateToSection('new-loan-wizard')">
+              <i data-lucide="file-plus" class="w-4 h-4"></i> New Application
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon"><i data-lucide="landmark"></i></div>
+              <p class="stat-title">Available Schemes</p>
+              <div class="stat-val-group" style="margin-top: 4px;">
+                <h3 class="stat-val" id="loan-schemes-count-label">40+ Schemes</h3>
+                <span class="trend-badge positive">Demo Vault</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Explore 30–50 verified MSME grants, subsidies & credit loans</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="openAllSchemesModal()">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i> View All Schemes
+            </button>
+          </div>
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon"><i data-lucide="check-square"></i></div>
+              <p class="stat-title">Check Eligibility</p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Instant evaluation for MSME & startup financing</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="openEligibilityCheckerModal()">
+              <i data-lucide="check-circle" class="w-4 h-4"></i> Check Eligibility
+            </button>
+          </div>
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon" style="color: #10B981;"><i data-lucide="file-plus"></i></div>
+              <p class="stat-title">Apply for Loan</p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Submit financing requirements and upload verification files</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center; background-color: #10B981;" onclick="navigateToSection('new-loan-wizard')">
+              <i data-lucide="file-plus" class="w-4 h-4"></i> New Application
+            </button>
+          </div>
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="calculator"></i></div>
+              <p class="stat-title">EMI Calculator</p>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Compute monthly instalments, total interest & schedule</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center; background-color: #F59E0B;" onclick="openEmiCalculatorModal()">
+              <i data-lucide="calculator" class="w-4 h-4"></i> Calculate
+            </button>
+          </div>
+        </div>
+
+        <div class="section-title-wrap" style="margin-top: 12px;">
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary);">Featured Scheme Cards</h3>
+        </div>
+        <div class="schemes-grid-container" id="loan-schemes-cards-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;"></div>
+
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">My Loan Applications</h4>
+              <p class="card-subtitle">Track status of submitted financing requests.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Application ID</th>
+                <th>Scheme Name</th>
+                <th>Requested Amount</th>
+                <th>Submission Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="loan-applications-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: NEW LOAN WIZARD (HIDDEN PAGE VIEW) ================= -->
+      <section id="section-new-loan-wizard" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>New Loan Application Wizard</h2>
+              <p>Submit your financing requirements and upload verification documents.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('loans')">&larr; Back to Loan Services</button>
+          </div>
+        </div>
+        <div class="card">
+          <form id="new-loan-wizard-form" class="modal-body" style="gap: 20px;">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Scheme Name</label>
+                <input type="text" id="wiz-scheme-name" placeholder="e.g. MSME Modernization Loan" required />
+              </div>
+              <div class="form-group">
+                <label>Government / Ministry Department</label>
+                <input type="text" id="wiz-ministry" placeholder="e.g. Ministry of MSME" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Requested Loan Amount (₹)</label>
+                <input type="number" id="wiz-amount" placeholder="2500000" required />
+              </div>
+              <div class="form-group">
+                <label>Interest Rate / Benefit</label>
+                <input type="text" id="wiz-interest" placeholder="7.5% p.a. Interest" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tenure / Duration</label>
+                <input type="text" id="wiz-tenure" placeholder="5 Years" required />
+              </div>
+              <div class="form-group">
+                <label>Upload Supporting Documents (PDF/Doc)</label>
+                <input type="file" id="wiz-docs" accept=".pdf,.doc,.docx,.png,.jpg" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Scheme Description & Business Purpose</label>
+              <textarea id="wiz-desc" rows="3" placeholder="Explain how funds will be deployed..." required style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); outline: none; font-family: inherit;"></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px;">
+              <button type="button" class="small-btn" onclick="navigateToSection('loans')">Cancel</button>
+              <button type="submit" class="primary-btn">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload & Submit Application
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: DOCUMENTS ================= -->
+      <section id="section-documents" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Document Management Vault</h2>
+              <p>Upload, organize, and inspect required compliance and business documents.</p>
+            </div>
+            <button class="primary-btn" onclick="showToast('Select document file to upload...')">
+              <i data-lucide="upload" class="w-4 h-4"></i> Upload Documents
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">My Documents & Required Verification Files</h4>
+              <p class="card-subtitle">All uploaded certificates, identity proofs, and tax filings.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Document Name</th>
+                <th>Category</th>
+                <th>Upload Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MSME Registration Certificate.pdf</strong></td>
+                <td>Business Proof</td>
+                <td>Aug 15, 2026</td>
+                <td><span class="table-badge delivered">Verified</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+              <tr>
+                <td><strong>GST Returns Q1 2026.xlsx</strong></td>
+                <td>Tax Filing</td>
+                <td>Sep 02, 2026</td>
+                <td><span class="table-badge pending">Pending Review</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+              <tr>
+                <td><strong>Audited Balance Sheet FY25.pdf</strong></td>
+                <td>Financials</td>
+                <td>Jul 20, 2026</td>
+                <td><span class="table-badge delivered">Verified</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: MSME SERVICES ================= -->
+      <section id="section-msme" class="page-section">
+        <div class="section-title-wrap">
+          <h2>MSME Services & Government Support</h2>
+          <p>Access Udyam MSME registration information, government schemes, subsidies, and business support resources.</p>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <!-- Card 1: MSME Registration (Udyam Guide Button) -->
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon"><i data-lucide="award"></i></div>
+              <p class="stat-title">MSME Registration</p>
+              <div class="stat-val-group" style="margin-top: 4px;">
+                <h3 class="stat-val" style="font-size: 18px;">Udyam Portal</h3>
+                <span class="trend-badge positive">Govt of India</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Official criteria, paperless registration & mandatory paperwork</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="openUdyamGuideModal()">
+              <i data-lucide="book-open" class="w-4 h-4"></i> Udyam Guide
+            </button>
+          </div>
+          <!-- Card 2: Government Schemes (View Schemes Button) -->
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon" style="color: #3B82F6;"><i data-lucide="shield-check"></i></div>
+              <p class="stat-title">Government Schemes</p>
+              <div class="stat-val-group" style="margin-top: 4px;">
+                <h3 class="stat-val" style="font-size: 18px;">40+ Listed</h3>
+                <span class="trend-badge positive">Active Vault</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Explore active central grants, credit guarantees & subsidies</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center;" onclick="openAllSchemesModal()">
+              <i data-lucide="layout-grid" class="w-4 h-4"></i> View Schemes
+            </button>
+          </div>
+          <!-- Card 3: Subsidies & Benefits (View Benefits Button) -->
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon" style="color: #10B981;"><i data-lucide="percent"></i></div>
+              <p class="stat-title">Subsidies & Benefits</p>
+              <div class="stat-val-group" style="margin-top: 4px;">
+                <h3 class="stat-val" style="font-size: 18px; color: #10B981;">Up to 80% Off</h3>
+                <span class="trend-badge positive">Grants</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Capital subsidies, tax exemptions & technology upgrades</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center; background-color: #10B981;" onclick="openMsmeSubsidiesModal()">
+              <i data-lucide="gift" class="w-4 h-4"></i> View Benefits
+            </button>
+          </div>
+          <!-- Card 4: Business Support (24/7 Desk Button) -->
+          <div class="card stat-card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="headphones"></i></div>
+              <p class="stat-title">Business Support</p>
+              <div class="stat-val-group" style="margin-top: 4px;">
+                <h3 class="stat-val" style="font-size: 18px; color: #F59E0B;">Help Desk</h3>
+                <span class="trend-badge positive">24/7 Active</span>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">Live expert FAQs, grievance redressal & CODEX AI assistance</p>
+            </div>
+            <button type="button" class="primary-btn" style="margin-top: 14px; width: 100%; justify-content: center; background-color: #F59E0B;" onclick="navigateToSection('msme-support')">
+              <i data-lucide="message-square-code" class="w-4 h-4"></i> 24/7 Desk
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Key MSME Subsidies & Benefits Summary</h4>
+              <p class="card-subtitle">Overview of financial grants, technology upgradation funds, and market promotion support.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Subsidy / Scheme</th>
+                <th>Ministry / Department</th>
+                <th>Benefit Type</th>
+                <th>Eligibility</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Credit Linked Capital Subsidy (CLCSS)</strong></td>
+                <td>Ministry of MSME</td>
+                <td>15% Capital Subsidy (Up to ₹ 15 Lakhs)</td>
+                <td>Micro & Small Enterprises</td>
+              </tr>
+              <tr>
+                <td><strong>Zero Defect Zero Effect (ZED) Certification</strong></td>
+                <td>Quality Council of India</td>
+                <td>Up to 80% Subsidy on Assessment Cost</td>
+                <td>All Manufacturing MSMEs</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- MSME Service Requests Tracking Ledger -->
+        <div class="card" style="margin-top: 20px;">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">My MSME Service Requests & Applications</h4>
+              <p class="card-subtitle">Live tracking of your submitted Udyam registrations, subsidies, and support tickets.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Service Type</th>
+                <th>Business Name</th>
+                <th>Date Submitted</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="msme-requests-tbody">
+              <tr>
+                <td><strong>MSME-9021</strong></td>
+                <td>Udyam Registration</td>
+                <td>Pratik Enterprises</td>
+                <td>Sep 01, 2026</td>
+                <td><span class="table-badge delivered">Certificate Issued</span></td>
+              </tr>
+              <tr>
+                <td><strong>MSME-9104</strong></td>
+                <td>ZED Subsidy Application</td>
+                <td>CODEX Technologies</td>
+                <td>Sep 10, 2026</td>
+                <td><span class="table-badge pending">Under Review</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: HELP & SUPPORT DESK ================= -->
+      <section id="section-msme-support" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>MSME & CODEX 24/7 Help Desk</h2>
+              <p>Comprehensive user support center for complaints, scheme guidance, and document assistance.</p>
+            </div>
+            <button class="primary-btn" onclick="openNewSupportTicketModal()">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Raise Support Ticket
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card" onclick="document.getElementById('support-faqs-anchor').scrollIntoView({behavior: 'smooth'})">
+            <div class="stat-icon"><i data-lucide="help-circle"></i></div>
+            <p class="stat-title">Knowledge Base & FAQs</p>
+            <h3 class="stat-val" style="font-size: 15px; color: var(--accent-color);">Browse Topics &darr;</h3>
+          </div>
+          <div class="card stat-card interactive-card" onclick="navigateToSection('loans')">
+            <div class="stat-icon"><i data-lucide="landmark"></i></div>
+            <p class="stat-title">Scheme & Loan Guidance</p>
+            <h3 class="stat-val" style="font-size: 15px; color: #10B981;">Explore Vault &rarr;</h3>
+          </div>
+          <div class="card stat-card interactive-card" onclick="navigateToSection('documents')">
+            <div class="stat-icon"><i data-lucide="file-text"></i></div>
+            <p class="stat-title">Document Assistance</p>
+            <h3 class="stat-val" style="font-size: 15px; color: #F59E0B;">Compliance Vault &rarr;</h3>
+          </div>
+          <div class="card stat-card interactive-card" onclick="document.getElementById('codex-toggle-btn').click()">
+            <div class="stat-icon" style="color: #7C3AED;"><i data-lucide="bot"></i></div>
+            <p class="stat-title">CODEX AI Assistant</p>
+            <h3 class="stat-val" style="font-size: 15px; color: #7C3AED;">Chat Now &uarr;</h3>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 4px;">
+          <div class="card" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="card-header" style="margin-bottom: 0;">
+              <div>
+                <h4 class="card-title" id="support-faqs-anchor">Frequently Asked Questions (FAQs)</h4>
+                <p class="card-subtitle">Quick answers regarding Udyam registrations, credit subsidies, and application status.</p>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div class="faq-accordion-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                  <span>How can I check the live status of my loan or MSME application?</span>
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+                <div class="faq-a">
+                  You can track your submitted requests in real-time under the <strong>Loan Services</strong> or <strong>MSME Services</strong> sections where live ledger statuses (e.g., "Under Review", "Certificate Issued") are updated automatically.
+                </div>
+              </div>
+              <div class="faq-accordion-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                  <span>What documents are mandatory for Udyam MSME registration?</span>
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+                <div class="faq-a">
+                  You only need an Aadhaar card linked with your active mobile number, your enterprise/proprietor PAN card, bank account details, and plant address pincode. No paper uploads are required.
+                </div>
+              </div>
+              <div class="faq-accordion-item">
+                <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                  <span>How do I claim the Credit Linked Capital Subsidy (CLCSS)?</span>
+                  <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                </div>
+                <div class="faq-a">
+                  Micro and small enterprises acquiring approved machinery through term loans can apply through the DC-MSME portal or our MSME Subsidies application drawer.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+            <h4 class="card-title">Direct Support Contacts</h4>
+            <p style="font-size: 12px; color: var(--text-secondary);">Reach out to our specialist help desk teams during business hours.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 4px;">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; background: var(--bg-main); border: 1px solid var(--border-color);">
+                <i data-lucide="phone-call" class="w-4 h-4 text-accent"></i>
+                <div>
+                  <span style="font-size: 11px; color: #94A3B8; display: block;">Toll-Free Helpline</span>
+                  <strong style="font-size: 12.5px; color: var(--text-primary);">1800-CODEX-MSME</strong>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; background: var(--bg-main); border: 1px solid var(--border-color);">
+                <i data-lucide="mail" class="w-4 h-4 text-accent"></i>
+                <div>
+                  <span style="font-size: 11px; color: #94A3B8; display: block;">Support Email Desk</span>
+                  <strong style="font-size: 12.5px; color: var(--text-primary);">support@codex-msme.gov</strong>
+                </div>
+              </div>
+              <button class="primary-btn" style="width: 100%; justify-content: center; margin-top: 8px;" onclick="openNewSupportTicketModal()">
+                <i data-lucide="ticket" class="w-4 h-4"></i> Submit Complaint / Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 4px;">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Submitted Support Tickets & Complaints</h4>
+              <p class="card-subtitle">Track responses from our grievance redressal officers.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ticket ID</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="help-desk-tickets-tbody">
+              <tr>
+                <td><strong>TICK-4021</strong></td>
+                <td>Tax & GST Filing Assistance</td>
+                <td>Assistance required for Q1 GST reconciliation export.</td>
+                <td>Sep 15, 2026</td>
+                <td><span class="table-badge delivered">Resolved</span></td>
+              </tr>
+              <tr>
+                <td><strong>TICK-4190</strong></td>
+                <td>Government Grant Inquiry</td>
+                <td>Inquiry regarding ZED certification subsidy disbursement.</td>
+                <td>Sep 17, 2026</td>
+                <td><span class="table-badge pending">In Progress</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION 6: INDIAN KALNIRNAY CALENDAR & MILESTONES ================= -->
+      <section id="section-calendar" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Kalnirnay & Business Compliance Calendar</h2>
+              <p>Traditional Indian monthly calendar layout integrated with GST deadlines, EMI dates, and corporate milestones.</p>
+            </div>
+            <button class="primary-btn" onclick="openAddEventModal()">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> + Add Event / Deadline
+            </button>
+          </div>
+        </div>
+
+        <!-- Main Kalnirnay Dashboard Layout (2 Columns: Grid & Side Panel) -->
+        <div class="kalnirnay-dashboard-grid">
+           
+          <!-- Column 1: Monthly Calendar Grid (Kalnirnay Style) -->
+          <div class="card kalnirnay-main-card">
+             
+            <!-- Calendar Navigation & Header -->
+            <div class="kalnirnay-header-bar">
+              <div class="kalnirnay-title-wrap">
+                <h3 id="kalnirnay-month-year-title">September 2026</h3>
+                <span class="kalnirnay-panchang-badge" id="kalnirnay-panchang-label">Bhadrapada - Ashwin 2048 Vikrami</span>
+              </div>
+              <div class="kalnirnay-nav-controls">
+                <button type="button" class="small-btn" onclick="changeKalnirnayMonth(-1)" title="Previous Month">
+                  <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+                <button type="button" class="small-btn" onclick="jumpToCurrentMonth()" title="Jump to Today">Today</button>
+                <button type="button" class="small-btn" onclick="changeKalnirnayMonth(1)" title="Next Month">
+                  <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Search & Filter Toolbar -->
+            <div class="kalnirnay-filter-toolbar">
+              <div class="kalnirnay-search-box">
+                <i data-lucide="search" class="w-4 h-4 text-muted"></i>
+                <input type="text" id="kalnirnay-event-search" placeholder="Search festivals, GST deadlines, EMIs..." oninput="renderKalnirnayCalendar()" />
+              </div>
+              <div class="pill-group" id="kalnirnay-cat-pills">
+                <button class="pill active" data-calcat="all" onclick="setKalnirnayCategory('all', this)">All Events</button>
+                <button class="pill" data-calcat="Festival" onclick="setKalnirnayCategory('Festival', this)">Festivals</button>
+                <button class="pill" data-calcat="Compliance" onclick="setKalnirnayCategory('Compliance', this)">GST / Tax</button>
+                <button class="pill" data-calcat="EMI" onclick="setKalnirnayCategory('EMI', this)">Loan/EMI</button>
+                <button class="pill" data-calcat="Meeting" onclick="setKalnirnayCategory('Meeting', this)">Meetings</button>
+              </div>
+            </div>
+
+            <!-- Weekday Headers -->
+            <div class="kalnirnay-weekdays-grid">
+              <span class="wk-sun">Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span class="wk-sat">Sat</span>
+            </div>
+
+            <!-- Days Grid Matrix -->
+            <div class="kalnirnay-days-matrix" id="kalnirnay-days-grid-container"></div>
+
+            <!-- Color Indicator Legend Bar -->
+            <div class="kalnirnay-legend-bar">
+              <div class="legend-item"><span class="legend-dot ind-today"></span> Today</div>
+              <div class="legend-item"><span class="legend-dot ind-festival"></span> Indian Festival</div>
+              <div class="legend-item"><span class="legend-dot ind-compliance"></span> GST / Compliance</div>
+              <div class="legend-item"><span class="legend-dot ind-emi"></span> Loan / EMI Due</div>
+              <div class="legend-item"><span class="legend-dot ind-meeting"></span> Business Meeting</div>
+            </div>
+          </div>
+
+          <!-- Column 2: Selected Date Side Panel / Event Manager -->
+          <div class="card kalnirnay-side-panel">
+            <div class="card-header" style="margin-bottom: 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+              <div>
+                <h4 class="card-title" id="side-panel-date-header">September 18, 2026</h4>
+                <p class="card-subtitle" id="side-panel-panchang-sub">Tithi: Shukla Ekadashi &bull; Nakshatra: Purva Ashada</p>
+              </div>
+              <button type="button" class="small-btn" onclick="openAddEventForSelectedDate()">+ Add</button>
+            </div>
+            <div class="side-panel-events-scroll" id="side-panel-events-list"></div>
+
+            <!-- Quick Reminders Banner -->
+            <div class="side-panel-reminder-box">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <i data-lucide="bell-ring" class="w-4 h-4 text-accent"></i>
+                <strong style="font-size: 12.5px; color: var(--text-primary);">Active Alerts & Reminders</strong>
+              </div>
+              <p style="font-size: 11.5px; color: var(--text-secondary); line-height: 1.4;" id="side-panel-reminder-text">
+                  GST GSTR-3B filing due in 2 days. Ensure electronic ledger cash balance is verified.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: GUIDE MENU ================= -->
+      <section id="section-guide" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Website User Manual & Database Guide</h2>
+          <p>Comprehensive technical documentation, database architecture breakdown, and feature guidelines for CODEX.</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+          <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.1); color: var(--accent-color); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="layout" class="w-4 h-4"></i>
+              </div>
+              <h4 class="card-title" style="margin-bottom: 0;">Platform Architecture & Features</h4>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <strong>CODEX</strong> is a synchronized MSME dashboard and database management platform. Key modules include:
+            </p>
+            <ul style="font-size: 12.5px; color: var(--text-secondary); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+              <li><strong>Dashboard & Analytics:</strong> Real-time charts powered by Chart.js tracking sales velocity, revenue targets, and performance logs.</li>
+              <li><strong>eCommerce & Inventory:</strong> Complete order tracking, product catalogs, customer management, and A4 print export tools.</li>
+              <li><strong>Loan & MSME Services:</strong> Integrated Udyam registration guides, 40+ government scheme vaults, EMI smart calculators, and eligibility evaluators.</li>
+              <li><strong>Kalnirnay Calendar:</strong> Traditional Indian calendar view integrated with GST compliance deadlines and loan EMI due dates.</li>
+            </ul>
+          </div>
+          <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); color: #10B981; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="database" class="w-4 h-4"></i>
+              </div>
+              <h4 class="card-title" style="margin-bottom: 0;">Local Storage Database Schema</h4>
+            </div>
+            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              The platform utilizes browser <code>localStorage</code> under the database key <code>CODEX_LOCAL_DATABASE_V42</code>. It handles persistence for:
+            </p>
+            <ul style="font-size: 12.5px; color: var(--text-secondary); padding-left: 18px; display: flex; flex-direction: column; gap: 6px; line-height: 1.5;">
+              <li><strong>Profiles & Accounts:</strong> Synchronized user data, social handles, avatars, and Supabase host authentication credentials.</li>
+              <li><strong>Dynamic Currency Engine:</strong> Real-time calculations across INR (₹), USD ($), EUR (€), GBP (£), and JPY (¥).</li>
+              <li><strong>Activity Notification Logs:</strong> Automated event tracking for order placements, supply fulfillments, and customer updates.</li>
+              <li><strong>OpenAI GPT Integration:</strong> Connects local database states directly to GPT-4o for natural language querying via the floating chat orb.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 4px;">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Quick Navigation & Shortcut Guide</h4>
+              <p class="card-subtitle">Handy keyboard shortcuts and system controls.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Action / Shortcut</th>
+                <th>Function</th>
+                <th>Module Location</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Ctrl + K</strong> (or <strong>Cmd + K</strong>)</td>
+                <td>Open Global Search & Quick Navigation Bar</td>
+                <td>Top Header</td>
+              </tr>
+              <tr>
+                <td><strong>Theme Toggle Button</strong></td>
+                <td>Switch between Dark Mode and Light Mode</td>
+                <td>Top Header</td>
+              </tr>
+              <tr>
+                <td><strong>Reset Database</strong></td>
+                <td>Restore factory initial demo records and tables</td>
+                <td>Settings Dropdown Menu</td>
+              </tr>
+              <tr>
+                <td><strong>CODEX AI Orb</strong></td>
+                <td>Chat with the neural engine regarding live database metrics</td>
+                <td>Bottom-Right Floating Widget</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: RETAIL INTELLIGENCE & AI FORECASTING (NEW HACKATHON FEATURE) ================= -->
+      <section id="section-retail-intelligence" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>AI Demand Forecasting & Dynamic Pricing Advisor</h2>
+              <p>Machine learning-powered inventory velocity, demand projections, and automated pricing recommendations <span class="demo-vault-badge" style="margin-left: 8px;">Demo Data</span></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="small-btn" onclick="uploadRetailSalesData()">
+                <i data-lucide="upload" class="w-4 h-4"></i> Upload Sales Data
+              </button>
+              <button class="primary-btn" onclick="generateRetailForecast()">
+                <i data-lucide="cpu" class="w-4 h-4"></i> Generate Forecast
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 Required Retail Intelligence KPIs -->
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+            </div>
+            <p class="stat-title">Forecast Demand (30d)</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="ri-forecast-demand">18,450 units</h3>
+              <span class="trend-badge positive">+14.2%</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="package-minus"></i></div>
+            </div>
+            <p class="stat-title">Products Requiring Reorder</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="ri-products-reorder">12</h3>
+              <span class="trend-badge negative">Action Req.</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #10B981;"><i data-lucide="tag"></i></div>
+            </div>
+            <p class="stat-title">Pending Price Recommendations</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="ri-pending-prices">8</h3>
+              <span class="trend-badge positive">Optimized</span>
+            </div>
+          </div>
+          <div class="card stat-card interactive-card">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #EF4444;"><i data-lucide="alert-octagon"></i></div>
+            </div>
+            <p class="stat-title">Stock-Risk Alerts</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="ri-stock-risks">3</h3>
+              <span class="trend-badge negative">Critical</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actual Sales vs Predicted Demand Chart -->
+        <div class="card chart-card modern-animated-card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Actual Sales vs Predicted Demand (AI Model)</h4>
+              <p class="card-subtitle">Comparative historical sales against machine learning forecasted demand velocity <span class="demo-vault-badge" style="margin-left: 6px;">Demo Data</span></p>
+            </div>
+          </div>
+          <div class="canvas-box-large modern-animated-chart-wrapper">
+            <canvas id="retailForecastChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Product Priority & Pricing Advisory Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Product Priority & Pricing Advisory Table</h4>
+              <p class="card-subtitle">AI-driven reorder schedules and dynamic price suggestions for retail SKU catalog <span class="demo-vault-badge" style="margin-left: 6px;">Demo Data</span></p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>SKU ID</th>
+                <th>Product Name</th>
+                <th>Current Stock</th>
+                <th>Predicted Demand</th>
+                <th>Reorder Status</th>
+                <th>Price Recommendation</th>
+                <th>Priority</th>
+              </tr>
+            </thead>
+            <tbody id="retail-priority-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: CLOUD DATA ================= -->
+      <section id="section-cloud" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Cloud Data Synchronizer & Vault</h2>
+          <p>Secure cloud backup storage and distributed ledger synchronization node.</p>
+        </div>
+        <div class="card cloud-empty-vault-card" style="text-align: center; padding: 64px 24px;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59,130,246,0.1); color: var(--accent-color); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+            <i data-lucide="cloud-rain" class="w-8 h-8"></i>
+          </div>
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Cloud Vault is Ready & Connected</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); max-width: 400px; margin: 0 auto 20px;">No custom cloud files currently uploaded in this node session. Upload or sync your database packages anytime.</p>
+          <button class="primary-btn" onclick="showToast('Cloud synchronization node active & secure!')">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Cloud Node Now
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: BLOGS & NEWS ================= -->
+      <section id="section-blogs" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Industrial & Startup Blog's & News</h2>
+          <p>Latest insights, technological breakthroughs, and market trends across global industries.</p>
+        </div>
+        <div class="blogs-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          
+          <div class="card interactive-card" style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge" style="align-self: flex-start; background: rgba(59, 130, 246, 0.1); color: var(--accent-color);">Industrial Tech</span>
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Next-Gen Cool Roof Coatings and Thermal Efficiency</h4>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">Exploring how titanium dioxide and nano-ceramic emulsions reduce indoor ambient temperatures by up to 8°C in commercial facilities.</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94A3B8; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-color);">
+              <span>Sep 14, 2026</span>
+              <span style="color: var(--accent-color); font-weight: 600; cursor: pointer;" onclick="showToast('Opening full industrial article...')">Read Article &rarr;</span>
+            </div>
+          </div>
+          <div class="card interactive-card" style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge" style="align-self: flex-start; background: rgba(16, 185, 129, 0.1); color: #10B981;">Startup Ecosystem</span>
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">AI Assistants Revolutionizing MSME Supply Chains</h4>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">How conversational neural engines like CODEX AI are automating invoice tracking, inventory forecasting, and real-time currency conversions.</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94A3B8; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-color);">
+              <span>Sep 12, 2026</span>
+              <span style="color: var(--accent-color); font-weight: 600; cursor: pointer;" onclick="showToast('Opening startup ecosystem report...')">Read Article &rarr;</span>
+            </div>
+          </div>
+          <div class="card interactive-card" style="display: flex; flex-direction: column; gap: 12px;">
+            <span class="badge" style="align-self: flex-start; background: rgba(245, 158, 11, 0.1); color: #F59E0B;">Global Market</span>
+            <h4 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">Cross-Border B2B Payments & Multi-Currency Ledger Dynamics</h4>
+            <p style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">Analyzing exchange rate volatility across INR, USD, EUR, and JPY in digital wholesale transactions and automated settlement gateways.</p>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: #94A3B8; margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-color);">
+              <span>Sep 10, 2026</span>
+              <span style="color: var(--accent-color); font-weight: 600; cursor: pointer;" onclick="showToast('Opening global market analysis...')">Read Article &rarr;</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ================= PROFILE SELECTION PAGE ================= -->
+      <section id="section-profile-selection" class="page-section active">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Profile Selection</h2>
+              <p>Choose your portal to proceed with authentication.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('dashboard')">&larr; Back to Dashboard</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 12px;">
+          <!-- Host Card -->
+          <div class="card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 32px; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+              <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(59, 130, 246, 0.12); color: var(--accent-color); display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="shield-alert" style="width: 32px; height: 32px;"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">Host Portal</h3>
+                <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5;">Access administrative controls, manage wholesale suppliers, configure system flags, and oversee platform settings.</p>
+              </div>
+            </div>
+            <button class="primary-btn" style="width: 100%; justify-content: center; margin-top: 24px;" onclick="navigateToSection('host-login')">
+              Continue as Host &rarr;
+            </button>
+          </div>
+          <!-- User Card -->
+          <div class="card interactive-card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 32px; text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+              <div style="width: 64px; height: 64px; border-radius: 16px; background: rgba(16, 185, 129, 0.12); color: #10B981; display: flex; align-items: center; justify-content: center;">
+                <i data-lucide="user-check" style="width: 32px; height: 32px;"></i>
+              </div>
+              <div>
+                <h3 style="font-size: 20px; font-weight: 800; color: var(--text-primary); margin-bottom: 8px;">User Portal</h3>
+                <p style="font-size: 13.5px; color: var(--text-secondary); line-height: 1.5;">Access customer dashboards, track active loan applications, browse product catalogs, and review orders.</p>
+              </div>
+            </div>
+            <button class="primary-btn" style="width: 100%; justify-content: center; margin-top: 24px; background-color: #10B981;" onclick="navigateToSection('user-login')">
+              Continue as User &rarr;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HOST LOGIN PAGE ================= -->
+      <section id="section-host-login" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Host Login</h2>
+              <p>Enter your administrative credentials to manage the platform.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('profile-selection')">&larr; Back to Selection</button>
+          </div>
+        </div>
+        <div class="card" style="max-width: 500px; margin: 0 auto; width: 100%;">
+          <form id="host-login-form" class="modal-body" onsubmit="handleAuthSubmit(event, 'Host Login')">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="host-login-email" placeholder="host@codex-msme.gov" required />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="host-login-pass" placeholder="••••••••" required />
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-top: 4px;">
+              <a href="#" style="color: var(--accent-color); text-decoration: none;" onclick="showToast('Password reset link sent to email.')">Forgot Password?</a>
+            </div>
+            <div style="margin-top: 10px;">
+              <button type="submit" class="primary-btn" style="width: 100%; justify-content: center;">Login</button>
+            </div>
+            <div style="text-align: center; font-size: 13px; margin-top: 14px;">
+              Don't have a host account? <a href="#" onclick="navigateToSection('host-signup'); return false;" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Register here</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= HOST REGISTRATION PAGE ================= -->
+      <section id="section-host-signup" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Host Registration</h2>
+              <p>Create a new host account for platform administration.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('host-login')">&larr; Back to Login</button>
+          </div>
+        </div>
+        <div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
+          <form id="host-signup-form" class="modal-body" onsubmit="handleSignupSubmit(event, 'Host Sign Up')">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Host Full Name</label>
+                <input type="text" id="host-signup-name" placeholder="Pratik Narkhede" required />
+              </div>
+              <div class="form-group">
+                <label>Business/Organization Name</label>
+                <input type="text" id="host-signup-org" placeholder="CODEX Corp" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="host-signup-email" placeholder="host@codex-msme.gov" required />
+              </div>
+              <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="host-signup-mobile" placeholder="9876543210" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="host-signup-pass" placeholder="••••••••" required />
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="host-signup-conf" placeholder="••••••••" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Business Address</label>
+                <input type="text" id="host-signup-addr" placeholder="Jalgaon, Maharashtra" required />
+              </div>
+              <div class="form-group">
+                <label>Business Type</label>
+                <input type="text" id="host-signup-type" placeholder="Enterprise / Tech" required />
+              </div>
+            </div>
+            <div style="margin-top: 10px;">
+              <button type="submit" class="primary-btn" style="width: 100%; justify-content: center; background-color: #2563EB;">Register as Host</button>
+            </div>
+            <div style="text-align: center; font-size: 13px; margin-top: 14px;">
+              Already registered? <a href="#" onclick="navigateToSection('host-login'); return false;" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Login here</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= USER LOGIN PAGE ================= -->
+      <section id="section-user-login" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>User Login</h2>
+              <p>Access your client portal account.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('profile-selection')">&larr; Back to Selection</button>
+          </div>
+        </div>
+        <div class="card" style="max-width: 500px; margin: 0 auto; width: 100%;">
+          <form id="user-login-form" class="modal-body" onsubmit="handleAuthSubmit(event, 'User Login')">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="user-login-email" placeholder="user@example.com" required />
+            </div>
+            <div class="form-group">
+              <label>Password</label>
+              <input type="password" id="user-login-pass" placeholder="••••••••" required />
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-top: 4px;">
+              <a href="#" style="color: var(--accent-color); text-decoration: none;" onclick="showToast('Password reset link sent to email.')">Forgot Password?</a>
+            </div>
+            <div style="margin-top: 10px;">
+              <button type="submit" class="primary-btn" style="width: 100%; justify-content: center; background-color: #10B981;">Login</button>
+            </div>
+            <div style="text-align: center; font-size: 13px; margin-top: 14px;">
+              Don't have an account? <a href="#" onclick="navigateToSection('user-signup'); return false;" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Register here</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= USER REGISTRATION PAGE ================= -->
+      <section id="section-user-signup" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>User Registration</h2>
+              <p>Create a new client account.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('user-login')">&larr; Back to Login</button>
+          </div>
+        </div>
+        <div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
+          <form id="user-signup-form" class="modal-body" onsubmit="handleSignupSubmit(event, 'User Sign Up')">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="user-signup-name" placeholder="John Doe" required />
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="user-signup-email" placeholder="user@example.com" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mobile Number</label>
+                <input type="tel" id="user-signup-mobile" placeholder="9876543210" required />
+              </div>
+              <div class="form-group">
+                <label>Address (Optional)</label>
+                <input type="text" id="user-signup-addr" placeholder="City, State" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="user-signup-pass" placeholder="••••••••" required />
+              </div>
+              <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="user-signup-conf" placeholder="••••••••" required />
+              </div>
+            </div>
+            <div style="margin-top: 10px;">
+              <button type="submit" class="primary-btn" style="width: 100%; justify-content: center; background-color: #10B981;">Create Account</button>
+            </div>
+            <div style="text-align: center; font-size: 13px; margin-top: 14px;">
+              Already have an account? <a href="#" onclick="navigateToSection('user-login'); return false;" style="color: var(--accent-color); text-decoration: none; font-weight: 600;">Login here</a>
+            </div>
+          </form>
+        </div>
+      </section>
+
+     <!-- ================= SECTION 7: USER PROFILE & SECURITY ================= -->
+      <section id="section-profile" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>User Profile & Security Management</h2>
+              <p>Manage your professional identity, contact details, social channels, and account security settings.</p>
+            </div>
+            <button class="small-btn" onclick="navigateToSection('profile-selection')">&larr; Back to Profile Selection</button>
+          </div>
+        </div>
+
+        <!-- Modern Profile Dashboard Grid -->
+        <div class="profile-dashboard-layout">
+          
+          <!-- Main Profile Hero & Form Card -->
+          <div class="card profile-main-card-modern">
+            <!-- Cover Banner Header -->
+            <div class="profile-banner-container" id="profile-banner-element">
+              <div class="banner-overlay-gradient"></div>
+              <input type="file" id="profile-banner-input" accept="image/*" class="hidden" />
+              <button type="button" class="banner-upload-trigger-btn" id="banner-upload-trigger-btn" title="Recommended size 1584 x 396">
+                <i data-lucide="image" class="w-4 h-4"></i>
+                <span>Edit Cover Banner</span>
+              </button>
+            </div>
+
+            <div class="profile-body-content">
+              <div class="profile-avatar-row">
+                <div class="profile-avatar-wrapper-large">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&h=160&fit=crop" class="user-profile-img" id="profile-main-avatar" alt="Avatar" />
+                  <input type="file" id="profile-photo-input" accept="image/*" class="hidden" />
+                  <button type="button" class="avatar-edit-floating-btn" id="avatar-upload-trigger-btn" title="Upload Profile Photo">
+                    <i data-lucide="camera" class="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div class="profile-header-actions-right">
+                  <span class="verified-badge-pill">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Verified Codex Member
+                  </span>
+                </div>
+              </div>
+
+              <div class="profile-main-meta mb-4">
+                <h3 class="user-display-name">Pratik Narkhede</h3>
+                <p><span id="profile-role-desc">System Administrator</span> &bull; Jalgaon, India</p>
+              </div>
+
+              <form id="profile-form" class="profile-form">
+                <div class="profile-section-divider">
+                  <h4 class="form-subheading"><i data-lucide="user" class="w-4 h-4 text-accent"></i> Personal & Contact Details</h4>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="input-profile-firstname">First Name</label>
+                    <input type="text" id="input-profile-firstname" placeholder="Pratik" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="input-profile-lastname">Last Name</label>
+                    <input type="text" id="input-profile-lastname" placeholder="Narkhede" required />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="input-profile-role">Designation / Role</label>
+                    <input type="text" id="input-profile-role" placeholder="System Administrator" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="input-profile-mobile">Phone Number</label>
+                    <div class="phone-input-group">
+                      <select id="input-country-code" class="country-code-select">
+                        <option value="+91">🇮🇳 +91 (India)</option>
+                        <option value="+1">🇺🇸 +1 (USA)</option>
+                        <option value="+44">🇬🇧 +44 (UK)</option>
+                        <option value="+61">🇦🇺 +61 (Australia)</option>
+                        <option value="+971">🇦🇪 +971 (UAE)</option>
+                        <option value="+81">🇯🇵 +81 (Japan)</option>
+                        <option value="+49">🇩🇪 +49 (Germany)</option>
+                        <option value="+33">🇫🇷 +33 (France)</option>
+                      </select>
+                      <input type="tel" id="input-profile-mobile" placeholder="98765 43210" style="flex:1;" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="input-profile-email">Email Address</label>
+                    <input type="email" id="input-profile-email" placeholder="pratik@example.com" required />
+                  </div>
+                  <div class="form-group">
+                    <label for="input-profile-dob">Date of Birth (DOB)</label>
+                    <input type="date" id="input-profile-dob" />
+                  </div>
+                </div>
+
+                <div class="form-group mb-4" style="margin-bottom: 20px;">
+                  <label for="input-profile-loc">Location</label>
+                  <input type="text" id="input-profile-loc" placeholder="City, State, Country" required />
+                </div>
+
+                <div class="profile-section-divider">
+                  <h4 class="form-subheading"><i data-lucide="share-2" class="w-4 h-4 text-accent"></i> Social Media & Community Links</h4>
+                </div>
+
+                <div class="social-links-grid">
+                  <div class="social-input-group">
+                    <div class="social-brand-icon insta">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                    </div>
+                    <input type="url" id="input-social-instagram" placeholder="Instagram Profile URL" />
+                  </div>
+                  <div class="social-input-group">
+                    <div class="social-brand-icon linkedin">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                    </div>
+                    <input type="url" id="input-social-linkedin" placeholder="LinkedIn Profile URL" />
+                  </div>
+                  <div class="social-input-group">
+                    <div class="social-brand-icon twitter">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path></svg>
+                    </div>
+                    <input type="url" id="input-social-twitter" placeholder="Twitter / X Profile URL" />
+                  </div>
+                  <div class="social-input-group">
+                    <div class="social-brand-icon github">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    </div>
+                    <input type="url" id="input-social-github" placeholder="GitHub Profile URL" />
+                  </div>
+                  <div class="social-input-group">
+                    <div class="social-brand-icon discord">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6h0a14.5 14.5 0 0 0-4-1.5M6 6h0a14.5 14.5 0 0 1 4-1.5M7 13c1.5 1.5 3 2 5 2s3.5-.5 5-2M9 10h.01M15 10h.01"></path><path d="M20.5 16.5C19.8 19.5 16 21 12 21s-7.8-1.5-8.5-4.5c-.3-1.2-.5-3.5-.5-5.5s.2-4.3.5-5.5C4.2 4.5 8 3 12 3s7.8 1.5 8.5 4.5c.3 1.2.5 3.5.5 5.5s-.2 4.3-.5 5.5z"></path></svg>
+                    </div>
+                    <input type="url" id="input-social-discord" placeholder="Discord Invite / Profile URL" />
+                  </div>
+                  <div class="social-input-group">
+                    <div class="social-brand-icon whatsapp">
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                    </div>
+                    <input type="url" id="input-social-whatsapp" placeholder="WhatsApp Group Link" />
+                  </div>
+                </div>
+
+                <div class="profile-action-footer" style="margin-top: 28px; display: flex; align-items: center; justify-content: space-between;">
+                  <button type="submit" class="primary-btn" id="save-profile-btn">
+                    <i data-lucide="save" class="w-4 h-4"></i> Save Profile & Links
+                  </button>
+                  <button type="button" class="profile-logout-btn" id="profile-logout-btn" title="Sign out of CODEX" style="background: rgba(239, 68, 68, 0.1); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Log Out</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Secondary Security & Account Management Card -->
+          <div class="profile-sidebar-stack">
+            <div class="card security-mgmt-card">
+              <div class="card-header" style="margin-bottom: 16px;">
+                <div>
+                  <h4 class="card-title"><i data-lucide="shield" class="w-4 h-4 text-accent"></i> Security & Authentication</h4>
+                  <p class="card-subtitle">Manage session state and password</p>
+                </div>
+              </div>
+
+              <div class="security-list-items">
+                <div class="security-item-row">
+                  <div class="sec-left">
+                    <i data-lucide="mail-check" class="w-4 h-4 text-accent"></i>
+                    <div>
+                      <strong>Email Status</strong>
+                      <span class="sec-status-text">Supabase Session Active</span>
+                    </div>
+                  </div>
+                  <span class="table-badge delivered">Connected</span>
+                </div>
+
+                <div class="security-item-row">
+                  <div class="sec-left">
+                    <i data-lucide="key-round" class="w-4 h-4 text-accent"></i>
+                    <div>
+                      <strong>Password</strong>
+                      <span class="sec-status-text">Secure Credentials</span>
+                    </div>
+                  </div>
+                  <button type="button" class="small-btn" onclick="showToast('Password reset link sent to your email.')">Update</button>
+                </div>
+
+                <div class="security-item-row">
+                  <div class="sec-left">
+                    <i data-lucide="smartphone" class="w-4 h-4 text-accent"></i>
+                    <div>
+                      <strong>Two-Factor Auth</strong>
+                      <span class="sec-status-text">OTP Protection</span>
+                    </div>
+                  </div>
+                  <span class="badge" style="background: rgba(59, 130, 246, 0.12); color: var(--accent-color);">Enabled</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card quick-tips-card" style="margin-top: 16px; background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(124,58,237,0.06)); border: 1px solid rgba(59,130,246,0.18);">
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <i data-lucide="sparkles" class="w-4 h-4 text-accent"></i>
+                <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Professional Aesthetic</h4>
+              </div>
+              <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                All modifications are automatically saved to your local storage database and synced with your active session.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+     <!-- ================= SECTION 8: SETTINGS ================= -->
+      <section id="section-settings" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Global Database Flags & System Settings</h2>
+          <p>Configure application behavior, user notifications, and security preferences.</p>
+        </div>
+        <div class="card" style="display: flex; flex-direction: column; gap: 16px;">
+          <!-- Setting 1: Notifications -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Realtime Order & Activity Alerts</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Notify the bell icon and popup toast whenever an order or supply update occurs.</p>
+            </div>
+            <input type="checkbox" id="setting-notify" class="touch-toggle" checked />
+          </div>
+          <hr class="divider"/>
+          <!-- Setting 2: Two-Factor Authentication -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Two-Factor Authentication (2FA)</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Require OTP verification upon sensitive database modifications or host logins.</p>
+            </div>
+            <input type="checkbox" id="setting-2fa" class="touch-toggle" />
+          </div>
+          <hr class="divider"/>
+          <!-- Setting 3: Auto-Sync Cloud Node -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Automatic Cloud Database Sync</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Continuously synchronize local storage state with Supabase cloud node.</p>
+            </div>
+            <input type="checkbox" id="setting-autosync" class="touch-toggle" checked />
+          </div>
+          <hr class="divider"/>
+          <!-- Setting 4: Sound Effects -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Sound Effects & Audio Feedback</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Play subtle audio cues on button clicks, data saves, and alerts.</p>
+            </div>
+            <input type="checkbox" id="setting-sound" class="touch-toggle" />
+          </div>
+          <hr class="divider"/>
+          <!-- Setting 5: Developer Debug Log Mode -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Developer Debug Log Mode</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Output database transaction states and API calls directly to browser console.</p>
+            </div>
+            <input type="checkbox" id="setting-debug" class="touch-toggle" />
+          </div>
+          <hr class="divider"/>
+          <!-- Setting 6: Automated Weekly Backups -->
+          <div class="settings-option" style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Automated Weekly CSV Backups</h4>
+              <p class="settings-desc" style="font-size: 12px; color: var(--text-secondary);">Export full inventory and order reports automatically at end of week.</p>
+            </div>
+            <input type="checkbox" id="setting-weekly-backup" class="touch-toggle" checked />
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Product Details Modal -->
+  <div class="modal-overlay hidden" id="product-detail-modal">
+    <div class="product-detail-card" id="printable-product-modal-card">
+      <div class="product-detail-header no-print">
+        <div class="prod-modal-title-wrap">
+          <i data-lucide="package" class="w-5 h-5 text-accent"></i>
+          <h3 id="modal-product-title">Product Details & Buyer Records</h3>
+        </div>
+        
+        <div class="prod-modal-header-actions">
+          <button type="button" class="icon-btn print-product-modal-btn" id="print-product-detail-btn" title="Print A4 Size Report">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+          </button>
+          <button class="modal-close-btn" id="product-modal-close"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="print-header-area">
+        <h2>Product Buyer & Delivery Ledger</h2>
+        <p>Product: <strong id="print-product-name-label"></strong> &bull; Generated by CODEX on <span id="print-product-report-date"></span></p>
+      </div>
+      <div class="product-detail-body">
+        <table class="data-table" id="product-buyers-table">
+          <thead>
+            <tr>
+              <th>Buyer Name</th>
+              <th>Purchase Date</th>
+              <th>Delivery Status</th>
+            </tr>
+          </thead>
+          <tbody id="product-buyers-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Schemes Explorer Popup Modal -->
+  <div class="modal-overlay hidden" id="all-schemes-modal">
+    <div class="modal-card all-schemes-modal-card">
+      <div class="modal-header" style="align-items: flex-start; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Government & MSME Loan Schemes Directory</h3>
+            <span class="demo-vault-badge">Demo / Sample Data</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">
+            Showing curated credit-linked schemes, technological subsidies, and collateral-free advances for micro and small enterprises.
+          </p>
+        </div>
+        <button class="modal-close-btn" onclick="closeAllSchemesModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="schemes-modal-toolbar">
+        <div class="schemes-modal-search">
+          <i data-lucide="search" class="w-4 h-4 text-muted"></i>
+          <input type="text" id="modal-scheme-search" placeholder="Search by scheme name, ministry, or keywords..." oninput="filterModalSchemes()" />
+        </div>
+        <div class="pill-group" id="scheme-cat-pill-group">
+          <button class="pill active" data-schemecat="all" onclick="setSchemeCatFilter('all', this)">All (40)</button>
+          <button class="pill" data-schemecat="Credit" onclick="setSchemeCatFilter('Credit', this)">Credit & Working Capital</button>
+          <button class="pill" data-schemecat="Subsidy" onclick="setSchemeCatFilter('Subsidy', this)">Subsidies & Grants</button>
+          <button class="pill" data-schemecat="Green" onclick="setSchemeCatFilter('Green', this)">Green & Solar</button>
+          <button class="pill" data-schemecat="Women" onclick="setSchemeCatFilter('Women', this)">Women & SC/ST</button>
+        </div>
+      </div>
+      <div class="schemes-modal-grid-scroll" id="schemes-modal-cards-container"></div>
+      <div class="modal-footer" style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11.5px; color: #94A3B8;">
+          Notice: All listed metrics, interest subsidies, and guidelines are simulated demo data for dashboard testing.
+        </span>
+        <button type="button" class="small-btn" onclick="closeAllSchemesModal()">Close Window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subsidies & Benefits Explorer Modal -->
+  <div class="modal-overlay hidden" id="msme-subsidies-modal">
+    <div class="modal-card all-schemes-modal-card">
+      <div class="modal-header" style="align-items: flex-start; gap: 16px;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">MSME Subsidies & Financial Grants</h3>
+            <span class="demo-vault-badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981; border-color: rgba(16, 185, 129, 0.3);">Up to 80% Benefit</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">
+            Review active capital grants, technology upgradation incentives, and tax reimbursement programs.
+          </p>
+        </div>
+        <button class="modal-close-btn" onclick="closeMsmeSubsidiesModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="schemes-modal-grid-scroll" id="msme-subsidies-cards-container" style="margin-top: 8px;"></div>
+      <div class="modal-footer" style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11.5px; color: #94A3B8;">
+          Click 'Apply Benefit' to initiate subsidy review directly through your business profile.
+        </span>
+        <button type="button" class="small-btn" onclick="closeMsmeSubsidiesModal()">Close Window</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loan Eligibility Assessment Modal -->
+  <div class="modal-overlay hidden" id="loan-eligibility-modal">
+    <div class="modal-card" style="width: 500px; max-width: 95vw;">
+      <div class="modal-header">
+        <h3>MSME & Business Loan Eligibility Assessment</h3>
+        <button class="modal-close-btn" onclick="closeEligibilityCheckerModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="loan-eligibility-form" class="modal-body" onsubmit="handleEligibilityFormSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="elig-biz-type">Business Constitution</label>
+            <select id="elig-biz-type" required>
+              <option value="Proprietorship">Sole Proprietorship</option>
+              <option value="Partnership">Partnership / LLP</option>
+              <option value="Pvt Ltd">Private Limited Company</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="elig-credit-score">Estimated Credit Score (CIBIL)</label>
+            <input type="number" id="elig-credit-score" min="300" max="900" placeholder="e.g. 750" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="elig-turnover">Annual Turnover (₹)</label>
+            <input type="number" id="elig-turnover" min="0" placeholder="e.g. 2500000" required />
+          </div>
+          <div class="form-group">
+            <label for="elig-vintage">Business Vintage (Years)</label>
+            <input type="number" id="elig-vintage" min="0" placeholder="e.g. 3" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="elig-gst">GST Registered?</label>
+          <select id="elig-gst" required>
+            <option value="yes">Yes, Active GSTIN</option>
+            <option value="no">No / Exempted</option>
+          </select>
+        </div>
+        <div id="eligibility-result-banner" class="hidden" style="padding: 14px; border-radius: 10px; font-size: 13px; line-height: 1.5; margin-top: 4px;"></div>
+        <div class="modal-footer">
+          <button type="button" class="small-btn" onclick="closeEligibilityCheckerModal()">Cancel</button>
+          <button type="submit" class="primary-btn" id="elig-eval-btn">Evaluate Eligibility</button>
+          <button type="button" class="primary-btn hidden" id="elig-apply-direct-btn" onclick="closeEligibilityCheckerModal(); navigateToSection('new-loan-wizard');">Proceed to Apply &rarr;</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mobile Phone Style EMI Calculator Modal -->
+  <div class="modal-overlay hidden" id="emi-calculator-modal">
+    <div class="mobile-calc-frame">
+      <div class="mobile-calc-notch">
+        <div class="notch-speaker"></div>
+        <div class="notch-lens"></div>
+      </div>
+      <div class="mobile-calc-header">
+        <div class="mobile-calc-title">
+          <i data-lucide="smartphone" class="w-4 h-4 text-accent"></i>
+          <span>EMI Smart Desk</span>
+        </div>
+        <button class="modal-close-btn" onclick="document.getElementById('emi-calculator-modal').classList.add('hidden')" title="Close Calculator">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <div class="mobile-calc-screen">
+        <span class="calc-screen-label">Monthly EMI Payable</span>
+        <h2 class="calc-screen-val" id="emi-result-display">₹ 10,246</h2>
+        <div class="calc-screen-breakdown">
+          <div>
+            <span class="sub-label">Total Interest</span>
+            <p id="emi-total-interest">₹ 1,14,760</p>
+          </div>
+          <div style="border-left: 1px solid rgba(255, 255, 255, 0.15); padding-left: 10px;">
+            <span class="sub-label">Total Payment</span>
+            <p id="emi-total-payment">₹ 6,14,760</p>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-calc-body">
+        <div class="mobile-calc-field">
+          <div class="calc-field-top">
+            <label for="emi-loan-amt">Loan Amount</label>
+            <div class="calc-input-wrap">
+              <span class="cur-prefix">₹</span>
+              <input type="number" id="emi-loan-amt" value="500000" min="10000" max="10000000" step="5000" oninput="syncEmiSlider('amount')" />
+            </div>
+          </div>
+          <input type="range" id="emi-loan-amt-range" min="50000" max="5000000" step="10000" value="500000" class="calc-range-slider" oninput="syncEmiInput('amount')" />
+        </div>
+        <div class="mobile-calc-field">
+          <div class="calc-field-top">
+            <label for="emi-interest-rate">Interest Rate</label>
+            <div class="calc-input-wrap">
+              <input type="number" id="emi-interest-rate" step="0.1" value="8.5" min="1" max="30" oninput="syncEmiSlider('rate')" />
+              <span class="cur-suffix">%</span>
+            </div>
+          </div>
+          <input type="range" id="emi-interest-rate-range" min="5" max="24" step="0.1" value="8.5" class="calc-range-slider" oninput="syncEmiInput('rate')" />
+        </div>
+        <div class="mobile-calc-field">
+          <div class="calc-field-top">
+            <label for="emi-tenure-years">Tenure (Duration)</label>
+            <div class="calc-input-wrap">
+              <input type="number" id="emi-tenure-years" value="5" min="1" max="30" oninput="syncEmiSlider('tenure')" />
+              <span class="cur-suffix">Yrs</span>
+            </div>
+          </div>
+          <input type="range" id="emi-tenure-years-range" min="1" max="30" step="1" value="5" class="calc-range-slider" oninput="syncEmiInput('tenure')" />
+        </div>
+        <div class="mobile-quick-chips">
+          <button type="button" class="quick-chip" onclick="setQuickLoan(300000, 8.5, 3)">₹3L &bull; 3Y</button>
+          <button type="button" class="quick-chip" onclick="setQuickLoan(1000000, 8.0, 5)">₹10L &bull; 5Y</button>
+          <button type="button" class="quick-chip" onclick="setQuickLoan(2500000, 7.5, 7)">₹25L &bull; 7Y</button>
+        </div>
+        <div class="mobile-calc-actions">
+          <button type="button" class="mobile-calc-btn secondary" onclick="document.getElementById('emi-calculator-modal').classList.add('hidden')">
+            Dismiss
+          </button>
+          <button type="button" class="mobile-calc-btn primary" onclick="document.getElementById('emi-calculator-modal').classList.add('hidden'); navigateToSection('new-loan-wizard');">
+            Apply With This EMI &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Udyam Guide Step-by-Step Walkthrough Modal -->
+  <div class="modal-overlay hidden" id="udyam-guide-modal">
+    <div class="modal-card udyam-guide-modal-card">
+      <div class="modal-header" style="align-items: flex-start; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <h3 style="font-size: 18px; font-weight: 800; color: var(--text-primary);">Complete Udyam MSME Registration Guide</h3>
+            <span class="udyam-official-pill">Zero Govt Fee &bull; Paperless</span>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">
+            Official Ministry of Micro, Small & Medium Enterprises guidelines, classifications, and walkthrough.
+          </p>
+        </div>
+        <button class="modal-close-btn" onclick="closeUdyamGuideModal()"><i data-lucide="x"></i></button>
+      </div>
+      <div class="udyam-guide-content-scroll">
+        <div class="udyam-guide-block">
+          <h4 class="udyam-guide-subheading"><i data-lucide="shield-check" class="w-4 h-4 text-accent"></i> Composite Classification Criteria</h4>
+          <div class="udyam-criteria-grid">
+            <div class="criteria-card">
+              <span class="crit-type">Micro Enterprise</span>
+              <p><strong>Investment:</strong> Up to ₹ 1 Crore</p>
+              <p><strong>Turnover:</strong> Up to ₹ 5 Crore</p>
+            </div>
+            <div class="criteria-card">
+              <span class="crit-type">Small Enterprise</span>
+              <p><strong>Investment:</strong> Up to ₹ 10 Crore</p>
+              <p><strong>Turnover:</strong> Up to ₹ 50 Crore</p>
+            </div>
+            <div class="criteria-card">
+              <span class="crit-type">Medium Enterprise</span>
+              <p><strong>Investment:</strong> Up to ₹ 50 Crore</p>
+              <p><strong>Turnover:</strong> Up to ₹ 250 Crore</p>
+            </div>
+          </div>
+        </div>
+        <div class="udyam-guide-block">
+          <h4 class="udyam-guide-subheading"><i data-lucide="file-check" class="w-4 h-4 text-accent"></i> Mandatory Documents & Details</h4>
+          <div class="udyam-doc-tags-grid">
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>Aadhaar Card:</strong> Linked with mobile for OTP</span>
+            </div>
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>PAN Card:</strong> Enterprise or proprietor's PAN</span>
+            </div>
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>Bank Account:</strong> Current or savings IFSC code</span>
+            </div>
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>NIC 2/4 Digit Code:</strong> Primary business activity</span>
+            </div>
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>GSTIN (if applicable):</strong> Auto-verified via CBDT</span>
+            </div>
+            <div class="udyam-doc-item">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-accent"></i>
+              <span><strong>Plant / Location Address:</strong> PIN code & unit count</span>
+            </div>
+          </div>
+        </div>
+        <div class="udyam-guide-block">
+          <h4 class="udyam-guide-subheading"><i data-lucide="list-ordered" class="w-4 h-4 text-accent"></i> Step-by-Step Registration Walkthrough</h4>
+          <div class="udyam-steps-timeline">
+            <div class="udyam-step-card">
+              <span class="step-badge">Step 1</span>
+              <div class="step-text">
+                <h5>Aadhaar & OTP Verification</h5>
+                <p>Visit udyamregistration.gov.in. Select "For New Entrepreneurs" and authenticate via Aadhaar OTP.</p>
+              </div>
+            </div>
+            <div class="udyam-step-card">
+              <span class="step-badge">Step 2</span>
+              <div class="step-text">
+                <h5>PAN Validation</h5>
+                <p>Enter your PAN number. The portal automatically extracts and validates ITR filing data from income tax databases.</p>
+              </div>
+            </div>
+            <div class="udyam-step-card">
+              <span class="step-badge">Step 3</span>
+              <div class="step-text">
+                <h5>Plant Location & NIC Code Selection</h5>
+                <p>Add all factory/office physical addresses and pick your National Industry Classification (NIC) manufacturing or service code.</p>
+              </div>
+            </div>
+            <div class="udyam-step-card">
+              <span class="step-badge">Step 4</span>
+              <div class="step-text">
+                <h5>Machinery Investment & Final OTP</h5>
+                <p>Enter written-down investment cost in plant & machinery and submit the final mobile verification OTP.</p>
+              </div>
+            </div>
+            <div class="udyam-step-card">
+              <span class="step-badge">Step 5</span>
+              <div class="step-text">
+                <h5>Instant Udyam Registration Number</h5>
+                <p>A lifetime valid 19-digit URN (e.g., UDYAM-MH-12-0012345) and QR-code enabled certificate is issued within 24–48 hours.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="border-top: 1px solid var(--border-color); padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <a href="https://udyamregistration.gov.in" target="_blank" rel="noopener noreferrer" class="small-btn" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+          <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Visit Official Portal
+        </a>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="small-btn" onclick="closeUdyamGuideModal()">Close</button>
+          <button type="button" class="primary-btn" onclick="closeUdyamGuideModal(); openMsmeRegistrationModal();">
+            Fill CODEX MSME Form &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raise Support Ticket Modal -->
+  <div class="modal-overlay hidden" id="new-support-ticket-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Raise New Support / Complaint Ticket</h3>
+        <button class="modal-close-btn" onclick="closeNewSupportTicketModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="support-ticket-form" class="modal-body" onsubmit="submitSupportTicket(event)">
+        <div class="form-group">
+          <label>Support Category</label>
+          <select id="ticket-cat">
+            <option value="Tax & GST Filing Assistance">Tax & GST Filing Assistance</option>
+            <option value="Government Grant Inquiry">Government Grant Inquiry</option>
+            <option value="Application Status Help">Application Status Help</option>
+            <option value="Document Assistance">Document Assistance</option>
+            <option value="Technical Dispute Resolution">Technical Dispute Resolution</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Describe Your Issue or Complaint</label>
+          <textarea id="ticket-desc" rows="3" required placeholder="Provide ticket details..." style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); outline: none; font-family: inherit;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="small-btn" onclick="closeNewSupportTicketModal()">Cancel</button>
+          <button type="submit" class="primary-btn">Submit Ticket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Kalnirnay Add / Edit Event Modal -->
+  <div class="modal-overlay hidden" id="kalnirnay-event-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="kalnirnay-modal-title">Add Calendar Event / Deadline</h3>
+        <button class="modal-close-btn" onclick="closeKalnirnayEventModal()"><i data-lucide="x"></i></button>
+      </div>
+      <form id="kalnirnay-event-form" class="modal-body" onsubmit="handleKalnirnayEventSubmit(event)">
+        <input type="hidden" id="edit-event-index" value="" />
+        
+        <div class="form-group">
+          <label>Event / Deadline Title</label>
+          <input type="text" id="event-input-title" required placeholder="e.g. Q2 GST Return Filing" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Event Date</label>
+            <input type="date" id="event-input-date" required />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="event-input-category" required>
+              <option value="Compliance">GST / Compliance Deadline</option>
+              <option value="EMI">Loan / EMI Due Date</option>
+              <option value="Festival">Indian Festival / Holiday</option>
+              <option value="Meeting">Business Meeting</option>
+              <option value="Reminder">Personal Reminder</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description & Notes</label>
+          <textarea id="event-input-desc" rows="2" placeholder="Add specific notes or reminders..." style="padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); outline: none; font-family: inherit;"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="small-btn" onclick="closeKalnirnayEventModal()">Cancel</button>
+          <button type="submit" class="primary-btn">Save Event to Calendar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Crop Modal -->
+  <div class="modal-overlay hidden" id="crop-photo-modal">
+    <div class="crop-modal-card">
+      <div class="crop-modal-header">
+        <div class="crop-header-left">
+          <i data-lucide="crop" class="w-4 h-4 text-accent"></i>
+          <h4>Crop Profile Photo</h4>
+        </div>
+        
+        <div class="crop-header-right">
+          <button type="button" class="crop-confirm-check-btn" id="crop-confirm-check-btn" title="Save and Apply Profile Photo">
+            <i data-lucide="check" class="w-4 h-4"></i>
+          </button>
+          <button type="button" class="crop-cancel-btn" id="crop-cancel-btn" title="Cancel">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+      <div class="crop-modal-body">
+        <div class="crop-viewport-container" id="crop-viewport-container">
+          <div class="crop-circular-mask"></div>
+          <img id="crop-preview-image" src="" alt="Crop Source" />
+        </div>
+        <div class="crop-slider-controls">
+          <i data-lucide="zoom-out" class="w-4 h-4 text-muted"></i>
+          <input type="range" id="crop-zoom-slider" min="1" max="3" step="0.05" value="1" />
+          <i data-lucide="zoom-in" class="w-4 h-4 text-muted"></i>
+        </div>
+        <p class="crop-hint">Drag image to position &bull; Click checkmark symbol <strong>(✓)</strong> on top-right to save.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Order/Customer/Company Supply -->
+  <div class="modal-overlay hidden" id="db-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Database Record</h3>
+        <button class="modal-close-btn" id="modal-close"><i data-lucide="x"></i></button>
+      </div>
+      <form id="modal-form" class="modal-body">
+        <div id="modal-fields-container"></div>
+        <div class="modal-footer">
+          <button type="button" class="small-btn" id="modal-cancel-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Codex AI -->
+  <div class="codex-ai-container" id="codex-widget">
+    <button class="codex-orb-trigger" id="codex-toggle-btn" title="Open Codex AI Neural Engine">
+      <div class="orb-outer-glow"></div>
+      <div class="orb-ring orb-ring-1"></div>
+      <div class="orb-ring orb-ring-2"></div>
+      <div class="orb-ring orb-ring-3"></div>
+      <div class="orb-core">
+        <i data-lucide="bot" class="orb-ai-icon"></i>
+        <div class="orb-sparkle-center"></div>
+      </div>
+      <span class="orb-label-badge">CODEX AI (GPT)</span>
+    </button>
+    <div class="codex-chat-box hidden" id="codex-chat-box">
+      <div class="codex-chat-header">
+        <div class="ai-avatar-info">
+          <div class="ai-avatar-badge">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <div>
+            <h5>Codex AI <span class="ai-pill">OpenAI GPT-4o</span></h5>
+            <span class="ai-status"><span class="status-dot"></span> Live Assistant</span>
+          </div>
+        </div>
+        <div class="chat-header-actions">
+          <button class="codex-header-action-btn" id="codex-clear-chat-btn" title="Clear conversation history">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+          <button class="codex-close-btn" id="codex-close-btn" title="Close"><i data-lucide="x"></i></button>
+        </div>
+      </div>
+      <div class="codex-quick-suggestions">
+        <button class="suggestion-chip" data-ask="Give me a complete summary of all sections on this website.">💡 Full System Summary</button>
+        <button class="suggestion-chip" data-ask="Show me the products inventory and buyer records.">📦 Products & Buyers</button>
+        <button class="suggestion-chip" data-ask="What is the active revenue target and today's profit?">💰 Revenue & Targets</button>
+      </div>
+      <div class="codex-messages" id="codex-messages">
+        <div class="ai-bubble">
+          Hello! I am <strong>Codex AI</strong>. Ask me anything about MSME services, government schemes, or your database!
+        </div>
+      </div>
+      <form class="codex-input-area" id="codex-form">
+        <input type="text" id="codex-input" placeholder="Message Codex AI..." autocomplete="off" />
+        <button type="submit" class="codex-send-btn" title="Send Query">
+          <i data-lucide="send"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
