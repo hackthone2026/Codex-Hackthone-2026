@@ -39,6 +39,14 @@
               <span>Dashboard</span>
             </div>
           </a>
+          <!-- Host Apps & Hub Link -->
+          <a href="#" class="nav-item" data-target="host-apps">
+            <div class="nav-label">
+              <i data-lucide="globe"></i>
+              <span>Host Apps & Hub</span>
+            </div>
+            <span class="badge" style="background: rgba(239, 68, 68, 0.12); color: #EF4444;">Host</span>
+          </a>
           <a href="#" class="nav-item" data-target="ecommerce">
             <div class="nav-label">
               <i data-lucide="shopping-bag"></i>
@@ -232,8 +240,81 @@
 
     <!-- Page Body -->
     <main class="content-container">
+
+      <!-- ================= SECTION: HOST EXTERNAL APPS (ZOMATO, FLIPKART, ETC.) ================= -->
+      <section id="section-host-apps" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Host Application Launcher & Integration Hub</h2>
+              <p>Direct administrative access to integrated external applications and platforms.</p>
+            </div>
+            <button class="primary-btn" onclick="openExternalAppModal()">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Custom App Link
+            </button>
+          </div>
+        </div>
+
+        <div class="stat-cards-grid-4">
+          <!-- Flipkart Shortcut Card -->
+          <div class="card stat-card interactive-card" onclick="window.open('https://www.flipkart.com', '_blank')" style="cursor: pointer;">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #2874F0;"><i data-lucide="shopping-bag"></i></div>
+              <div class="corner-arrow-badge"><i data-lucide="external-link"></i></div>
+            </div>
+            <p class="stat-title">E-Commerce</p>
+            <h3 class="stat-val" style="font-size: 18px; color: #2874F0;">Flipkart Hub</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">Open live marketplace store</p>
+          </div>
+
+          <!-- Zomato Shortcut Card -->
+          <div class="card stat-card interactive-card" onclick="window.open('https://www.zomato.com', '_blank')" style="cursor: pointer;">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #CB202D;"><i data-lucide="utensils"></i></div>
+              <div class="corner-arrow-badge"><i data-lucide="external-link"></i></div>
+            </div>
+            <p class="stat-title">Food & Logistics</p>
+            <h3 class="stat-val" style="font-size: 18px; color: #CB202D;">Zomato Portal</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">Manage food delivery metrics</p>
+          </div>
+
+          <!-- Amazon Shortcut Card -->
+          <div class="card stat-card interactive-card" onclick="window.open('https://www.amazon.in', '_blank')" style="cursor: pointer;">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #FF9900;"><i data-lucide="globe"></i></div>
+              <div class="corner-arrow-badge"><i data-lucide="external-link"></i></div>
+            </div>
+            <p class="stat-title">Global Retail</p>
+            <h3 class="stat-val" style="font-size: 18px; color: #FF9900;">Amazon Store</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">Global inventory sync</p>
+          </div>
+
+          <!-- Custom Embedded iframe Frame -->
+          <div class="card stat-card interactive-card" onclick="openEmbeddedAppModal('https://www.wikipedia.org', 'Wikipedia Knowledge Base')" style="cursor: pointer;">
+            <div class="card-top-action">
+              <div class="stat-icon" style="color: #10B981;"><i data-lucide="compass"></i></div>
+              <div class="corner-arrow-badge"><i data-lucide="maximize-2"></i></div>
+            </div>
+            <p class="stat-title">Embedded App</p>
+            <h3 class="stat-val" style="font-size: 18px; color: #10B981;">In-App Browser</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 6px;">Open inside dashboard iframe</p>
+          </div>
+        </div>
+
+        <!-- Embedded App Preview Container -->
+        <div class="card" id="embedded-app-card" style="margin-top: 10px; display: none; padding: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 id="embedded-app-title" style="font-size: 15px; font-weight: 700; color: var(--text-primary);">External Application View</h4>
+            <button class="small-btn" onclick="document.getElementById('embedded-app-card').style.display='none'">Close Frame</button>
+          </div>
+          <div style="width: 100%; height: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color);">
+            <iframe id="embedded-app-iframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+          </div>
+        </div>
+      </section>
+
       <!-- ================= SECTION 1: DASHBOARD ================= -->
-<section id="section-dashboard" class="page-section">
+      <section id="section-dashboard" class="page-section">
         <div class="welcome-banner">
           <h2>Welcome back, <span class="user-display-name text-accent">Pratik Narkhede</span> 👋</h2>
           <p>Live synchronized records from your local storage database.</p>
@@ -1347,7 +1428,7 @@
         </div>
       </section>
 
-      <!-- ================= SECTION: RETAIL INTELLIGENCE & AI FORECASTING (NEW HACKATHON FEATURE) ================= -->
+      <!-- ================= SECTION: RETAIL INTELLIGENCE & AI FORECASTING ================= -->
       <section id="section-retail-intelligence" class="page-section">
         <div class="section-title-wrap">
           <div class="title-with-btn">
@@ -1366,7 +1447,6 @@
           </div>
         </div>
 
-        <!-- 4 Required Retail Intelligence KPIs -->
         <div class="stat-cards-grid-4">
           <div class="card stat-card interactive-card">
             <div class="card-top-action">
@@ -1410,7 +1490,6 @@
           </div>
         </div>
 
-        <!-- Actual Sales vs Predicted Demand Chart -->
         <div class="card chart-card modern-animated-card">
           <div class="card-header">
             <div>
@@ -1423,7 +1502,6 @@
           </div>
         </div>
 
-        <!-- Product Priority & Pricing Advisory Table -->
         <div class="card">
           <div class="card-header">
             <div>
@@ -1503,6 +1581,7 @@
           </div>
         </div>
       </section>
+
       <!-- ================= PROFILE SELECTION PAGE ================= -->
       <section id="section-profile-selection" class="page-section active">
         <div class="section-title-wrap">
@@ -2536,5 +2615,3 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
-</body>
-</html>

@@ -9,7 +9,6 @@ const OPENAI_API_KEY_STORAGE = "CODEX_OPENAI_API_KEY";
 // ================= SUPABASE HOST AUTH CONFIGURATION =================
 const SUPABASE_URL = "https://ljegrgqhyzcbiqzahyan.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_sn3qRHOqrba0WEpFEQ3CWg_Tn49Tmhp";
-// Alias for compatibility with SUPABASE_ANON_KEY checks
 const SUPABASE_ANON_KEY = SUPABASE_PUBLISHABLE_KEY;
 
 let hostAuthClient = null;
@@ -1720,7 +1719,7 @@ window.submitMsmeService = function(e, serviceType) {
   logDatabaseNotification("system", `New MSME request submitted: ${serviceType} for ${busName}`);
 };
 
-// FIXED ROBUST AUTH SUBMIT (SUPABASE + LOCAL FALLBACK)
+// FIXED ROBUST AUTH SUBMIT (SUPABASE + LOCAL FALLBACK) with Role-Based Redirection
 window.handleAuthSubmit = function(e, authType) {
   e.preventDefault();
   const isHost = authType.includes('Host');
@@ -1758,14 +1757,21 @@ window.handleAuthSubmit = function(e, authType) {
     if (formEl) formEl.reset();
     renderAllFromDB();
     document.body.classList.remove("auth-mode");
-    setTimeout(() => navigateToSection('dashboard'), 800);
+
+    // Role-based routing: Host opens host-apps/dashboard, User opens client portal (loans/dashboard)
+    setTimeout(() => {
+      if (isHost) {
+        navigateToSection('host-apps'); // Host opens external apps hub
+      } else {
+        navigateToSection('loans'); // User opens client loan section
+      }
+    }, 800);
   };
 
   if (!client) {
     const db = DB.get();
     const account = (db.accounts || []).find(acc => acc.email.toLowerCase() === email);
     if (!account) {
-      // Auto-create local demo session if credentials match general pattern
       completeLogin(email.split("@")[0], isHost ? 'host' : 'user');
       return;
     }
@@ -1781,7 +1787,6 @@ window.handleAuthSubmit = function(e, authType) {
       });
       
       if (error) {
-        // Fallback to local accounts if Supabase network fails or user not registered in remote db yet
         const db = DB.get();
         const account = (db.accounts || []).find(acc => acc.email.toLowerCase() === email);
         if (account) {
@@ -1843,7 +1848,7 @@ window.handleSignupSubmit = function(e, signupType) {
     document.getElementById(`${prefix}-signup-form`).reset();
     renderAllFromDB();
     document.body.classList.remove("auth-mode");
-    setTimeout(() => navigateToSection('dashboard'), 1000);
+    setTimeout(() => navigateToSection(isHost ? 'host-apps' : 'loans'), 1000);
   };
 
   if (!client) {
@@ -1955,6 +1960,7 @@ function toggleSidebarFullscreen() {
 }
 
 const SEARCHABLE_PAGES = [
+  { title: "Host Applications & Hub", target: "host-apps", category: "Host", icon: "globe", keywords: "host apps zomato flipkart amazon external hub launcher" },
   { title: "Retail Intelligence & AI Forecasting", target: "retail-intelligence", category: "AI", icon: "brain", keywords: "retail intelligence ai forecasting demand dynamic pricing advisor reorder stock risk" },
   { title: "Guide Menu & User Manual", target: "guide", category: "Info", icon: "book-open-check", keywords: "guide menu manual documentation website database help instructions" },
   { title: "Dashboard", target: "dashboard", category: "Page", icon: "layout-dashboard", keywords: "home main overview stats revenue target" },
@@ -1972,9 +1978,6 @@ const SEARCHABLE_PAGES = [
   { title: "Cloud Data", target: "cloud", category: "Page", icon: "cloud", keywords: "cloud backup vault storage sync" },
   { title: "Industrial Blog's & News", target: "blogs", category: "Page", icon: "newspaper", keywords: "blog news startup industrial articles reports" },
   { title: "Profile Selection", target: "profile-selection", category: "Auth", icon: "shield-alert", keywords: "profile selection host user authentication login signup" },
-  { title: "Host Authentication", target: "host-auth", category: "Auth", icon: "shield-alert", keywords: "host login sign up administrator" },
-  { title: "User Authentication", target: "user-auth", category: "Auth", icon: "user-check", keywords: "user login sign up member client" },
-  { title: "About Us & User Manual", target: "about", category: "Info", icon: "info", keywords: "about us manual guide help documentation instructions" },
   { title: "System Settings", target: "settings", category: "Settings", icon: "settings", keywords: "preferences 2fa notifications alerts configuration database reset settings" }
 ];
 
@@ -2113,7 +2116,6 @@ async function processOpenAIChatAPI(rawPrompt) {
       })
     });
     if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
       return generateLocalDatabaseQueryResponse(rawPrompt);
     }
     const data = await response.json();
@@ -3235,4 +3237,109 @@ window.runDemandForecastModule = function() {
 
 window.generateRetailForecast = function() {
   runDemandForecastModule();
+};
+
+// ================= HOST EXTERNAL APP LAUNCHER HELPERS =================
+window.openEmbeddedAppModal = function(url, titleName) {
+  const card = document.getElementById("embedded-app-card");
+  const iframe = document.getElementById("embedded-app-iframe");
+  const title = document.getElementById("embedded-app-title");
+  if (card && iframe && title) {
+    title.textContent = titleName;
+    iframe.src = url;
+    card.style.display = "block";
+    card.scrollIntoView({ behavior: 'smooth' });
+    showToast(`Loaded ${titleName} inside host frame.`);
+  }
+};
+
+window.openExternalAppModal = function() {
+  const customUrl = prompt("Enter website URL to open (e.g., https://www.zomato.com):", "https://");
+  if (customUrl && customUrl.startsWith("http")) {
+    window.open(customUrl, "_blank");
+    showToast("Opened external app in new tab.");
+  }
+};
+// ================= PYTHON FASTAPI BACKEND INTEGRATION =================
+const API_BASE_URL = "http://127.0.0.1:8000"; // Update to your deployed backend URL in production
+
+window.fetchBackendForecasts = async function() {
+  const loadingEl = document.getElementById("forecast-loading-indicator");
+  const tbody = document.getElementById("backend-forecast-tbody");
+  if (loadingEl) loadingEl.classList.remove("hidden");
+
+  // Format payload using local products catalog database state
+  const db = DB.get();
+  const sampleSalesPayload = (db.productsCatalog || []).map((prod, idx) => ({
+    product_id: prod.id || `PROD-0${idx+1}`,
+    product_name: prod.name || "Sample Product",
+    date: new Date().toISOString().slice(0, 10),
+    quantity_sold: Math.floor(Math.random() * 15) + 5,
+    current_stock: prod.quantity || 50,
+    selling_price: 299.00
+  }));
+
+  try {
+    const [forecastRes, pricingRes] = await Promise.all([
+      fetch(`${API_BASE_URL}/forecast`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sales_history: sampleSalesPayload })
+      }),
+      fetch(`${API_BASE_URL}/pricing/recommendations`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": "Bearer host-mock-token"
+        },
+        body: JSON.stringify({ items: sampleSalesPayload })
+      })
+    ]);
+
+    if (!forecastRes.ok || !pricingRes.ok) {
+      throw new Error("Failed to fetch predictions from FastAPI backend.");
+    }
+
+    const forecastData = await forecastRes.json();
+    const pricingData = await pricingRes.json();
+
+    if (tbody) {
+      tbody.innerHTML = forecastData.forecasts.map(f => {
+        const pricingMatch = pricingData.recommendations.find(p => p.product_id === f.product_id) || { current_price: 299, suggested_price: 299, reason: "Optimal" };
+        return `
+          <tr>
+            <td><strong>${f.product_id}</strong><br>${f.product_name}</td>
+            <td>50 units</td>
+            <td><strong>${f.predicted_demand_7d} units</strong> (${f.method_used})</td>
+            <td>₹${pricingMatch.current_price}</td>
+            <td><strong style="color: var(--accent-color);">₹${pricingMatch.suggested_price}</strong></td>
+            <td><small>${pricingMatch.reason}</small></td>
+            <td>
+              <button class="small-btn" style="background: #10B981; color: white; border: none;" onclick="approvePricingChange('${f.product_id}', ${pricingMatch.suggested_price})">Approve</button>
+              <button class="small-btn delete-row-btn" onclick="showToast('Suggestion rejected.')">Reject</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+    showToast("Successfully synchronized with FastAPI backend!");
+  } catch (err) {
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #EF4444; padding: 24px;">Connection error: Make sure FastAPI backend is running locally at ${API_BASE_URL}.</td></tr>`;
+    }
+    showToast("Error connecting to Python backend API.");
+  } finally {
+    if (loadingEl) loadingEl.classList.add("hidden");
+  }
+};
+
+window.approvePricingChange = function(productId, approvedPrice) {
+  const db = DB.get();
+  const prod = (db.productsCatalog || []).find(p => p.id === productId);
+  if (prod) {
+    prod.approvedPrice = approvedPrice;
+    DB.save(prod);
+  }
+  showToast(`Price ₹${approvedPrice} approved for ${productId} and synced to database!`);
+  logDatabaseNotification("system", `Host approved dynamic price suggestion (₹${approvedPrice}) for ${productId}.`);
 };
