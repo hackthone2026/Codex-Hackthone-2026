@@ -3343,3 +3343,150 @@ window.approvePricingChange = function(productId, approvedPrice) {
   showToast(`Price ₹${approvedPrice} approved for ${productId} and synced to database!`);
   logDatabaseNotification("system", `Host approved dynamic price suggestion (₹${approvedPrice}) for ${productId}.`);
 };
+// ================= RETAIL INTELLIGENCE & FORECASTING FIX =================
+window.generateRetailForecast = function() {
+  showToast("Running AI Demand Forecasting & Dynamic Pricing model...");
+  
+  // Loading state simulation
+  const forecastDemandEl = document.getElementById("ri-forecast-demand");
+  const productsReorderEl = document.getElementById("ri-products-reorder");
+  const pendingPricesEl = document.getElementById("ri-pending-prices");
+  const stockRisksEl = document.getElementById("ri-stock-risks");
+
+  setTimeout(() => {
+    // Randomized realistic updates to simulate ML model output
+    const newDemand = Math.floor(18000 + Math.random() * 1500);
+    const newReorder = Math.floor(10 + Math.random() * 5);
+    const newPrices = Math.floor(6 + Math.random() * 5);
+    const newRisks = Math.floor(2 + Math.random() * 3);
+
+    if (forecastDemandEl) forecastDemandEl.textContent = `${newDemand.toLocaleString()} units`;
+    if (productsReorderEl) productsReorderEl.textContent = newReorder;
+    if (pendingPricesEl) pendingPricesEl.textContent = newPrices;
+    if (stockRisksEl) stockRisksEl.textContent = newRisks;
+
+    // Update Chart if instance exists
+    if (typeof retailForecastChartInstance !== 'undefined' && retailForecastChartInstance) {
+      retailForecastChartInstance.data.datasets[0].data = [
+        Math.floor(1150 + Math.random() * 100),
+        Math.floor(1300 + Math.random() * 100),
+        Math.floor(1250 + Math.random() * 100),
+        Math.floor(1480 + Math.random() * 100),
+        Math.floor(1580 + Math.random() * 100),
+        Math.floor(1700 + Math.random() * 100)
+      ];
+      retailForecastChartInstance.data.datasets[1].data = [
+        Math.floor(1200 + Math.random() * 100),
+        Math.floor(1320 + Math.random() * 100),
+        Math.floor(1400 + Math.random() * 100),
+        Math.floor(1520 + Math.random() * 100),
+        Math.floor(1650 + Math.random() * 100),
+        Math.floor(1820 + Math.random() * 100)
+      ];
+      retailForecastChartInstance.update();
+    }
+
+    showToast("Forecast generated successfully! Metrics and charts updated.");
+  }, 800);
+};
+
+window.uploadRetailSalesData = function() {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = ".csv,.xlsx,.xls";
+  fileInput.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      showToast(`Sales dataset "${file.name}" uploaded and processed successfully!`);
+    }
+  };
+  fileInput.click();
+};
+// ================= RETAIL INTELLIGENCE SUBMENU & ROUTING LOGIC =================
+const RETAIL_INTELLIGENCE_ROUTES = [
+  "demand-forecasting",
+  "dynamic-pricing",
+  "smart-inventory",
+  "market-intelligence",
+  "ai-retail-assistant",
+  "alerts-notifications",
+  "reports-analytics",
+  "retail-intelligence"
+];
+
+function setupRetailIntelligenceSubmenu() {
+  const toggleBtn = document.getElementById("retail-intelligence-toggle");
+  const submenu = document.getElementById("retail-intelligence-submenu");
+  const chevron = document.getElementById("ri-chevron");
+
+  if (!toggleBtn || !submenu) return;
+
+  toggleBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    const isHidden = submenu.classList.contains("hidden");
+    if (isHidden) {
+      submenu.classList.remove("hidden");
+      toggleBtn.setAttribute("aria-expanded", "true");
+      if (chevron) chevron.style.transform = "rotate(180deg)";
+    } else {
+      submenu.classList.add("hidden");
+      toggleBtn.setAttribute("aria-expanded", "false");
+      if (chevron) chevron.style.transform = "rotate(0deg)";
+    }
+  });
+
+  // Attach click listeners to submenu items
+  document.querySelectorAll(".nav-sub-item").forEach(item => {
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      const target = item.getAttribute("data-target");
+      if (target) navigateToSection(target);
+    });
+  });
+}
+
+// Enhance navigateToSection to auto-expand submenu and highlight active sub-item
+const originalNavigateToSection = window.navigateToSection || navigateToSection;
+window.navigateToSection = function(targetId) {
+  // Call original logic or standard section switching
+  const authSections = ["profile-selection", "host-login", "host-signup", "user-login", "user-signup"];
+  const isAuthPage = authSections.includes(targetId);
+  document.body.classList.toggle("auth-mode", isAuthPage);
+
+  // Clear active state on main nav items and subitems
+  document.querySelectorAll(".sidebar .nav-item, .sidebar .nav-sub-item").forEach(n => {
+    n.classList.remove("active");
+    if (n.getAttribute("data-target") === targetId) {
+      n.classList.add("active");
+    }
+  });
+
+  // Handle Retail Intelligence Submenu auto-expansion
+  const submenu = document.getElementById("retail-intelligence-submenu");
+  const toggleBtn = document.getElementById("retail-intelligence-toggle");
+  const chevron = document.getElementById("ri-chevron");
+
+  if (RETAIL_INTELLIGENCE_ROUTES.includes(targetId)) {
+    if (submenu) submenu.classList.remove("hidden");
+    if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "true");
+    if (chevron) chevron.style.transform = "rotate(180deg)";
+  }
+
+  document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
+  const sec = document.getElementById(`section-${targetId}`);
+  if (sec) {
+    sec.classList.add("active");
+  } else {
+    // Fallback if routed to generic 'retail-intelligence'
+    const fallbackSec = document.getElementById("section-demand-forecasting");
+    if (fallbackSec && targetId === "retail-intelligence") fallbackSec.classList.add("active");
+  }
+
+  if (targetId === "calendar") renderKalnirnayCalendar();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+// Initialize submenu on DOMContentLoaded
+document.addEventListener("DOMContentLoaded", () => {
+  setupRetailIntelligenceSubmenu();
+});

@@ -33,7 +33,7 @@
           </button>
         </div>          
         <div class="menu-items-wrapper" id="menu-items-container">
-          <a href="#" class="nav-item active" data-target="dashboard">
+          <a href="#" class="nav-item" data-target="dashboard">
             <div class="nav-label">
               <i data-lucide="layout-dashboard"></i>
               <span>Dashboard</span>
@@ -127,13 +127,51 @@
             </div>
             <span class="badge" style="background: rgba(124, 58, 237, 0.12); color: #7C3AED;">Manual</span>
           </a>
-          <a href="#" class="nav-item" data-target="retail-intelligence">
-            <div class="nav-label">
-              <i data-lucide="brain"></i>
-              <span>Retail Intelligence</span>
+
+          <!-- Retail Intelligence Expandable Submenu -->
+          <div class="nav-group" id="nav-group-retail-intelligence">
+            <button type="button" class="nav-item nav-parent-btn" id="retail-intelligence-toggle" aria-expanded="false" aria-controls="retail-intelligence-submenu">
+              <div class="nav-label">
+                <i data-lucide="brain"></i>
+                <span>Retail Intelligence</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="badge" style="background: rgba(59, 130, 246, 0.12); color: var(--accent-color);">AI</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 submenu-chevron" id="ri-chevron"></i>
+              </div>
+            </button>
+            <div class="nav-submenu hidden" id="retail-intelligence-submenu" role="region" aria-labelledby="retail-intelligence-toggle">
+              <a href="#" class="nav-sub-item" data-target="demand-forecasting">
+                <i data-lucide="trending-up" class="w-3.5 h-3.5"></i>
+                <span>Demand Forecasting</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="dynamic-pricing">
+                <i data-lucide="tag" class="w-3.5 h-3.5"></i>
+                <span>Dynamic Pricing Advisor</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="smart-inventory">
+                <i data-lucide="boxes" class="w-3.5 h-3.5"></i>
+                <span>Smart Inventory</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="market-intelligence">
+                <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                <span>Market Intelligence</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="ai-retail-assistant">
+                <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                <span>AI Retail Assistant</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="alerts-notifications">
+                <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+                <span>Alerts & Notifications</span>
+              </a>
+              <a href="#" class="nav-sub-item" data-target="reports-analytics">
+                <i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i>
+                <span>Reports & Analytics</span>
+              </a>
             </div>
-            <span class="badge" style="background: rgba(59, 130, 246, 0.12); color: var(--accent-color);">AI</span>
-          </a>
+          </div>
+
         </div>
       </div>
     </div>
@@ -483,37 +521,6 @@
 
       <!-- ================= SECTION 2: ECOMMERCE ================= -->
       <section id="section-ecommerce" class="page-section">
-        <div class="section-title-wrap">
-          <div class="title-with-btn">
-            <div>
-              <h2>eCommerce Inventory & Orders</h2>
-              <p>Direct relational records stored in the database.</p>
-            </div>
-            <button class="primary-btn" id="add-order-btn">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i> New Order
-            </button>
-          </div>
-        </div>
-
-        <div class="stat-cards-grid-4">
-          <div class="card stat-card interactive-card">
-            <p class="stat-title">Catalog Inventory</p>
-            <h3 class="stat-val" id="ecom-total-products">1,248</h3>
-          </div>
-          <div class="card stat-card interactive-card">
-            <p class="stat-title">Pending Orders</p>
-            <h3 class="stat-val" id="ecom-pending-orders">34</h3>
-          </div>
-          <div class="card stat-card interactive-card">
-            <p class="stat-title">Completed Orders</p>
-            <h3 class="stat-val" id="ecom-completed-orders">4,980</h3>
-          </div>
-          <div class="card stat-card interactive-card">
-            <p class="stat-title">Refund Allocations</p>
-            <h3 class="stat-val" id="ecom-refunds">₹1,120</h3>
-          </div>
-        </div>
-
         <div class="card printable-order-card" id="printable-order-section">
           <div class="card-header no-print">
             <div>
@@ -542,7 +549,7 @@
                   </button>
                 </div>
               </div>
-              <button class="round-cycle-arrow-btn" id="cycle-filter-arrow-btn" title="Cycle Filter: All → Pending → Completed → Cancelled">
+              <button class="round-cycle-arrow-btn" id="cycle-filter-arrow-btn" title="Cycle Filter">
                 <i data-lucide="rotate-cw" class="w-4 h-4"></i>
               </button>
             </div>
@@ -553,14 +560,7 @@
           </div>
           <table class="data-table" id="orders-table">
             <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Purchase Date</th>
-                <th>Customer</th>
-                <th>Purchased Item</th>
-                <th>Total</th>
-                <th>Status</th>
-              </tr>
+              <tr><th>Order ID</th><th>Purchase Date</th><th>Customer</th><th>Purchased Item</th><th>Total</th><th>Status</th></tr>
             </thead>
             <tbody id="orders-table-body"></tbody>
           </table>
@@ -569,61 +569,6 @@
 
       <!-- ================= SECTION 3: STOCK & ORDERS ================= -->
       <section id="section-analytics" class="page-section">
-        <div class="section-title-wrap">
-          <div class="title-with-btn">
-            <div>
-              <h2>Stock & Orders Management</h2>
-              <p>Warehouse inventory metrics, vendor dispatch pipelines, and modern delivery fulfillment states.</p>
-            </div>
-            <button class="primary-btn" id="add-company-supply-btn">
-              <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Supply Record
-            </button>
-          </div>
-        </div>
-
-        <div class="stat-cards-grid-4">
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon"><i data-lucide="layers"></i></div>
-            </div>
-            <p class="stat-title">Stock Details</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="analytics-stock-details">14,850</h3>
-              <span class="trend-badge positive">Catalog</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon"><i data-lucide="shopping-cart"></i></div>
-            </div>
-            <p class="stat-title">Stock Sold</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="analytics-stock-sold">9,420</h3>
-              <span class="trend-badge positive">₹ 18.2%</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon"><i data-lucide="check-circle"></i></div>
-            </div>
-            <p class="stat-title">Available Stock</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="analytics-stock-available">5,180</h3>
-              <span class="trend-badge positive">In Stock</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
-            </div>
-            <p class="stat-title">Unavailable Stock</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="analytics-stock-unavailable">250</h3>
-              <span class="trend-badge negative">Backordered</span>
-            </div>
-          </div>
-        </div>
-
         <div class="card printable-supply-card" id="printable-supply-section">
           <div class="card-header no-print">
             <div>
@@ -655,7 +600,7 @@
                   </button>
                 </div>
               </div>
-              <button class="round-cycle-arrow-btn" id="cycle-supply-filter-btn" title="Cycle Supply Filter: All → Delivered → In Transit → Pending → Out of Stock">
+              <button class="round-cycle-arrow-btn" id="cycle-supply-filter-btn" title="Cycle Supply Filter">
                 <i data-lucide="rotate-cw" class="w-4 h-4"></i>
               </button>
             </div>
@@ -666,15 +611,7 @@
           </div>
           <table class="data-table" id="supply-table">
             <thead>
-              <tr>
-                <th>Company Name</th>
-                <th>Product</th>
-                <th>Purchase Date</th>
-                <th>Delivery Schedule</th>
-                <th>Quantity</th>
-                <th>Gross Price</th>
-                <th>Shipment Status</th>
-              </tr>
+              <tr><th>Company Name</th><th>Product</th><th>Purchase Date</th><th>Delivery Schedule</th><th>Quantity</th><th>Gross Price</th><th>Shipment Status</th></tr>
             </thead>
             <tbody id="supply-table-body"></tbody>
           </table>
@@ -689,21 +626,22 @@
               <h2>Customer Directory</h2>
               <p>Database table of verified clients and their tiers.</p>
             </div>
-            <button class="primary-btn" id="add-customer-btn">
-              <i data-lucide="user-plus" class="w-4 h-4"></i> Add Customer
-            </button>
+            <div style="display: flex; gap: 10px;">
+              <button class="small-btn" id="print-customers-btn"><i data-lucide="printer" class="w-4 h-4"></i> Print</button>
+              <button class="primary-btn" id="add-customer-btn">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Add Customer
+              </button>
+            </div>
           </div>
+        </div>
+        <div class="print-header-area">
+          <h2>Customer Directory Report</h2>
+          <p>Generated by CODEX &bull; Verified Clients Ledger</p>
         </div>
         <div class="card">
           <table class="data-table">
             <thead>
-              <tr>
-                <th>Customer Name</th>
-                <th>Contact Email</th>
-                <th>Subscription Tier</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
+              <tr><th>Customer Name</th><th>Contact Email</th><th>Subscription Tier</th><th>Joined</th><th>Actions</th></tr>
             </thead>
             <tbody id="customers-table-body"></tbody>
           </table>
@@ -718,10 +656,17 @@
               <h2>Products Catalog & Upload Manager</h2>
               <p>Upload new product inventories, manage specifications, and review catalog items.</p>
             </div>
-            <button class="primary-btn" id="upload-new-product-btn">
-              <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Product List
-            </button>
+            <div style="display: flex; gap: 10px;">
+              <button class="small-btn" id="print-products-btn"><i data-lucide="printer" class="w-4 h-4"></i> Print</button>
+              <button class="primary-btn" id="upload-new-product-btn">
+                <i data-lucide="upload-cloud" class="w-4 h-4"></i> Upload Product List
+              </button>
+            </div>
           </div>
+        </div>
+        <div class="print-header-area">
+          <h2>Products Catalog Report</h2>
+          <p>Generated by CODEX &bull; Inventory Stock Status</p>
         </div>
         <div class="products-catalog-container" id="products-catalog-grid"></div>
       </section>
@@ -734,28 +679,89 @@
               <h2>Payment Transactions & Invoicing</h2>
               <p>Track all incoming and outgoing financial settlements (Pending & Completed).</p>
             </div>
-            <div class="filter-controls">
-              <div class="pill-group" id="payment-filter-group">
-                <button class="pill active" data-payfilter="all">All Payments</button>
-                <button class="pill" data-payfilter="completed">Completed</button>
-                <button class="pill" data-payfilter="pending">Pending</button>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <button class="small-btn" id="print-payments-btn"><i data-lucide="printer" class="w-4 h-4"></i> Print</button>
+              <div class="filter-controls">
+                <div class="pill-group" id="payment-filter-group">
+                  <button class="pill active" data-payfilter="all">All Payments</button>
+                  <button class="pill" data-payfilter="completed">Completed</button>
+                  <button class="pill" data-payfilter="pending">Pending</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <div class="print-header-area">
+          <h2>Payment Transactions Report</h2>
+          <p>Generated by CODEX &bull; Financial Settlements Ledger</p>
+        </div>
         <div class="card">
           <table class="data-table" id="payments-table">
             <thead>
-              <tr>
-                <th>Transaction ID</th>
-                <th>Payer / Client</th>
-                <th>Description</th>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Payment Status</th>
-              </tr>
+              <tr><th>Transaction ID</th><th>Payer / Client</th><th>Description</th><th>Amount</th><th>Date</th><th>Payment Status</th></tr>
             </thead>
             <tbody id="payments-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= SECTION: DOCUMENTS ================= -->
+      <section id="section-documents" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Document Management Vault</h2>
+              <p>Upload, organize, and inspect required compliance and business documents.</p>
+            </div>
+            <button class="primary-btn" onclick="showToast('Select document file to upload...')">
+              <i data-lucide="upload" class="w-4 h-4"></i> Upload Documents
+            </button>
+          </div>
+        </div>
+        <div class="print-header-area">
+          <h2>Compliance & Business Documents Report</h2>
+          <p>Generated by CODEX &bull; Document Management Vault</p>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">My Documents & Required Verification Files</h4>
+              <p class="card-subtitle">All uploaded certificates, identity proofs, and tax filings.</p>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Document Name</th>
+                <th>Category</th>
+                <th>Upload Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>MSME Registration Certificate.pdf</strong></td>
+                <td>Business Proof</td>
+                <td>Aug 15, 2026</td>
+                <td><span class="table-badge delivered">Verified</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+              <tr>
+                <td><strong>GST Returns Q1 2026.xlsx</strong></td>
+                <td>Tax Filing</td>
+                <td>Sep 02, 2026</td>
+                <td><span class="table-badge pending">Pending Review</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+              <tr>
+                <td><strong>Audited Balance Sheet FY25.pdf</strong></td>
+                <td>Financials</td>
+                <td>Jul 20, 2026</td>
+                <td><span class="table-badge delivered">Verified</span></td>
+                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
+              </tr>
+            </tbody>
           </table>
         </div>
       </section>
@@ -902,63 +908,6 @@
               </button>
             </div>
           </form>
-        </div>
-      </section>
-
-      <!-- ================= SECTION: DOCUMENTS ================= -->
-      <section id="section-documents" class="page-section">
-        <div class="section-title-wrap">
-          <div class="title-with-btn">
-            <div>
-              <h2>Document Management Vault</h2>
-              <p>Upload, organize, and inspect required compliance and business documents.</p>
-            </div>
-            <button class="primary-btn" onclick="showToast('Select document file to upload...')">
-              <i data-lucide="upload" class="w-4 h-4"></i> Upload Documents
-            </button>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <h4 class="card-title">My Documents & Required Verification Files</h4>
-              <p class="card-subtitle">All uploaded certificates, identity proofs, and tax filings.</p>
-            </div>
-          </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Document Name</th>
-                <th>Category</th>
-                <th>Upload Date</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>MSME Registration Certificate.pdf</strong></td>
-                <td>Business Proof</td>
-                <td>Aug 15, 2026</td>
-                <td><span class="table-badge delivered">Verified</span></td>
-                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
-              </tr>
-              <tr>
-                <td><strong>GST Returns Q1 2026.xlsx</strong></td>
-                <td>Tax Filing</td>
-                <td>Sep 02, 2026</td>
-                <td><span class="table-badge pending">Pending Review</span></td>
-                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
-              </tr>
-              <tr>
-                <td><strong>Audited Balance Sheet FY25.pdf</strong></td>
-                <td>Financials</td>
-                <td>Jul 20, 2026</td>
-                <td><span class="table-badge delivered">Verified</span></td>
-                <td><button class="small-btn" onclick="showToast('Downloading document...')">Download</button></td>
-              </tr>
-            </tbody>
-          </table>
         </div>
       </section>
 
@@ -1428,100 +1377,156 @@
         </div>
       </section>
 
-      <!-- ================= SECTION: RETAIL INTELLIGENCE & AI FORECASTING ================= -->
-      <section id="section-retail-intelligence" class="page-section">
+      <!-- ================= RETAIL INTELLIGENCE SUBMENU SECTIONS ================= -->
+      
+      <!-- 1. Demand Forecasting -->
+      <section id="section-demand-forecasting" class="page-section">
         <div class="section-title-wrap">
           <div class="title-with-btn">
             <div>
-              <h2>AI Demand Forecasting & Dynamic Pricing Advisor</h2>
-              <p>Machine learning-powered inventory velocity, demand projections, and automated pricing recommendations <span class="demo-vault-badge" style="margin-left: 8px;">Demo Data</span></p>
+              <h2>Demand Forecasting</h2>
+              <p>7-day and 30-day machine learning demand projections powered by forecasting engine.</p>
             </div>
-            <div style="display: flex; gap: 10px;">
-              <button class="small-btn" onclick="uploadRetailSalesData()">
-                <i data-lucide="upload" class="w-4 h-4"></i> Upload Sales Data
-              </button>
-              <button class="primary-btn" onclick="generateRetailForecast()">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Generate Forecast
-              </button>
-            </div>
+            <button class="primary-btn" onclick="generateRetailForecast()">
+              <i data-lucide="cpu" class="w-4 h-4"></i> Run Forecast Model
+            </button>
           </div>
         </div>
-
-        <div class="stat-cards-grid-4">
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon"><i data-lucide="trending-up"></i></div>
-            </div>
-            <p class="stat-title">Forecast Demand (30d)</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="ri-forecast-demand">18,450 units</h3>
-              <span class="trend-badge positive">+14.2%</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="package-minus"></i></div>
-            </div>
-            <p class="stat-title">Products Requiring Reorder</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="ri-products-reorder">12</h3>
-              <span class="trend-badge negative">Action Req.</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon" style="color: #10B981;"><i data-lucide="tag"></i></div>
-            </div>
-            <p class="stat-title">Pending Price Recommendations</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="ri-pending-prices">8</h3>
-              <span class="trend-badge positive">Optimized</span>
-            </div>
-          </div>
-          <div class="card stat-card interactive-card">
-            <div class="card-top-action">
-              <div class="stat-icon" style="color: #EF4444;"><i data-lucide="alert-octagon"></i></div>
-            </div>
-            <p class="stat-title">Stock-Risk Alerts</p>
-            <div class="stat-val-group">
-              <h3 class="stat-val" id="ri-stock-risks">3</h3>
-              <span class="trend-badge negative">Critical</span>
-            </div>
-          </div>
-        </div>
-
         <div class="card chart-card modern-animated-card">
           <div class="card-header">
             <div>
-              <h4 class="card-title">Actual Sales vs Predicted Demand (AI Model)</h4>
-              <p class="card-subtitle">Comparative historical sales against machine learning forecasted demand velocity <span class="demo-vault-badge" style="margin-left: 6px;">Demo Data</span></p>
+              <h4 class="card-title">SKU Demand Projections</h4>
+              <p class="card-subtitle">Actual sales velocity vs. predicted machine learning demand</p>
             </div>
           </div>
           <div class="canvas-box-large modern-animated-chart-wrapper">
             <canvas id="retailForecastChart"></canvas>
           </div>
         </div>
+      </section>
 
+      <!-- 2. Dynamic Pricing Advisor -->
+      <section id="section-dynamic-pricing" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Dynamic Pricing Advisor</h2>
+              <p>AI-driven price optimization based on inventory scarcity and demand elasticity.</p>
+            </div>
+            <button class="primary-btn" onclick="showToast('Computing price recommendations...')">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Optimize Margins
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <table class="data-table">
+            <thead>
+              <tr><th>SKU ID</th><th>Product Name</th><th>Current Stock</th><th>Selling Price</th><th>Suggested Price</th><th>Price Delta</th><th>Reason</th></tr>
+            </thead>
+            <tbody id="dynamic-pricing-table-body">
+              <tr><td><strong>SKU-101</strong></td><td>Titanium Cool-Coat Emulsion</td><td>450 units</td><td>₹2,450</td><td><strong>₹2,572</strong></td><td><span class="trend-badge positive">+5.0%</span></td><td>Optimal equilibrium</td></tr>
+              <tr><td><strong>SKU-102</strong></td><td>Polyurethane Amino Resin #5</td><td>22 units</td><td>₹1,890</td><td><strong>₹2,041</strong></td><td><span class="trend-badge positive">+8.0%</span></td><td>Low stock alert: High demand elasticity.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. Smart Inventory -->
+      <section id="section-smart-inventory" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Smart Inventory & Stock Replenishment</h2>
+          <p>Automated reorder triggers and stock level alerts linked to Stock & Orders.</p>
+        </div>
         <div class="card">
           <div class="card-header">
-            <div>
-              <h4 class="card-title">Product Priority & Pricing Advisory Table</h4>
-              <p class="card-subtitle">AI-driven reorder schedules and dynamic price suggestions for retail SKU catalog <span class="demo-vault-badge" style="margin-left: 6px;">Demo Data</span></p>
-            </div>
+            <div><h4 class="card-title">Inventory Reorder Recommendations</h4></div>
           </div>
           <table class="data-table">
             <thead>
-              <tr>
-                <th>SKU ID</th>
-                <th>Product Name</th>
-                <th>Current Stock</th>
-                <th>Predicted Demand</th>
-                <th>Reorder Status</th>
-                <th>Price Recommendation</th>
-                <th>Priority</th>
-              </tr>
+              <tr><th>Product Name</th><th>Current Stock</th><th>Safety Buffer</th><th>Reorder Status</th><th>Action</th></tr>
             </thead>
-            <tbody id="retail-priority-table-body"></tbody>
+            <tbody>
+              <tr><td>Dynamic Viscometer Sensors</td><td>12 units</td><td>30 units</td><td><span class="table-badge cancelled">Immediate Reorder</span></td><td><button class="small-btn" onclick="navigateToSection('analytics')">View Stock & Orders</button></td></tr>
+              <tr><td>Polyurethane Amino Resin #5</td><td>22 units</td><td>50 units</td><td><span class="table-badge pending">Required Soon</span></td><td><button class="small-btn" onclick="navigateToSection('analytics')">View Stock & Orders</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. Market Intelligence -->
+      <section id="section-market-intelligence" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Market Intelligence & Competitor Trends</h2>
+          <p>External pricing benchmarks and retail category sentiment analysis.</p>
+        </div>
+        <div class="card cloud-empty-vault-card" style="text-align: center; padding: 48px 24px;">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(59,130,246,0.1); color: var(--accent-color); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;">
+            <i data-lucide="globe" class="w-7 h-7"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">Market Intelligence Connector Pending</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); max-width: 380px; margin: 0 auto 16px;">External API integration for competitor scraping and regional pricing benchmarks is not yet configured.</p>
+          <button class="primary-btn" onclick="showToast('Configure market intelligence API in Settings.')">Configure API</button>
+        </div>
+      </section>
+
+      <!-- 5. AI Retail Assistant -->
+      <section id="section-ai-retail-assistant" class="page-section">
+        <div class="section-title-wrap">
+          <h2>AI Retail Assistant & Query Console</h2>
+          <p>Specialized retail conversational agent connected to local database and forecasting models.</p>
+        </div>
+        <div class="card" style="padding: 24px; text-align: center;">
+          <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px;">Codex AI Retail Console</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 16px;">You can also use the floating chatbot orb at the bottom right at any time.</p>
+          <button class="primary-btn" onclick="document.getElementById('codex-toggle-btn').click()" style="margin: 0 auto;">
+            <i data-lucide="bot" class="w-4 h-4"></i> Open Codex AI Chat
+          </button>
+        </div>
+      </section>
+
+      <!-- 6. Alerts & Notifications -->
+      <section id="section-alerts-notifications" class="page-section">
+        <div class="section-title-wrap">
+          <h2>Retail Alerts & Stock-Risk Notifications</h2>
+          <p>Real-time anomaly detection, low stock warnings, and price volatility alerts.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><h4 class="card-title">Active Risk Log</h4></div></div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Timestamp</th><th>Category</th><th>Description</th><th>Severity</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Today &bull; 10:45 AM</td><td>Stock Risk</td><td>SKU-103 (Dynamic Viscometer Sensors) stock critically low (12 units).</td><td><span class="table-badge cancelled">Critical</span></td></tr>
+              <tr><td>Sep 24 &bull; 02:15 PM</td><td>Price Volatility</td><td>Competitor price drop detected for Polyurethane Emulsion series.</td><td><span class="table-badge pending">Warning</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 7. Reports & Analytics -->
+      <section id="section-reports-analytics" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Retail Reports & Analytics</h2>
+              <p>Exportable performance summaries and inventory valuation reports.</p>
+            </div>
+            <button class="small-btn" onclick="showToast('Preparing PDF report export...')">
+              <i data-lucide="printer" class="w-4 h-4"></i> Print A4 Report
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><h4 class="card-title">Available Retail Reports</h4></div></div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Report Name</th><th>Generated Date</th><th>Format</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Monthly Demand Forecast Summary (September 2026)</strong></td><td>Sep 25, 2026</td><td>PDF / CSV</td><td><button class="small-btn" onclick="showToast('Downloading report...')">Download</button></td></tr>
+              <tr><td><strong>Dynamic Pricing Audit Log Q3</strong></td><td>Sep 20, 2026</td><td>Excel</td><td><button class="small-btn" onclick="showToast('Downloading report...')">Download</button></td></tr>
+            </tbody>
           </table>
         </div>
       </section>
@@ -2615,3 +2620,5 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="script.js"></script>
+</body>
+</html>

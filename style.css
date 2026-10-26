@@ -3677,3 +3677,152 @@ body.auth-mode .content-container {
   justify-content: center;
   min-height: 100vh;
 }
+/* ================= SECTION-SPECIFIC PRINT STYLES ================= */
+@media print {
+  /* Hide all elements by default */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show only the targeted print section and its children */
+  body.printing-orders #section-ecommerce,
+  body.printing-orders #section-ecommerce *,
+  body.printing-supply #section-analytics,
+  body.printing-supply #section-analytics *,
+  body.printing-customers #section-customers,
+  body.printing-customers #section-customers *,
+  body.printing-products #section-products,
+  body.printing-products #section-products *,
+  body.printing-payments #section-payments,
+  body.printing-payments #section-payments *,
+  body.printing-documents #section-documents,
+  body.printing-documents #section-documents *,
+  .product-detail-card,
+  .product-detail-card * {
+    visibility: visible !important;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .sidebar, .topbar, .codex-ai-container, .toast, .no-print, button, .filter-controls, .order-table-actions, .split-button-group, .round-cycle-arrow-btn {
+    display: none !important;
+  }
+
+  .print-header-area {
+    display: block !important;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #0F172A;
+    padding-bottom: 12px;
+  }
+
+  .print-header-area h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 4px;
+  }
+
+  .print-header-area p {
+    font-size: 12px;
+    color: #64748B;
+  }
+
+  .data-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto;
+  }
+
+  .data-table tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  .data-table th, .data-table td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 10px 12px !important;
+    color: #0F172A !important;
+    background: #FFFFFF !important;
+    font-size: 12px !important;
+  }
+
+  .data-table th {
+    background: #F1F5F9 !important;
+    font-weight: 700 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+}
+/* ================= RETAIL INTELLIGENCE EXPANDABLE SUBMENU ================= */
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-parent-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.submenu-chevron {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #94A3B8;
+}
+
+.nav-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-left: 18px;
+  margin: 4px 0 6px 0;
+  border-left: 2px solid var(--border-color);
+  margin-left: 16px;
+  transition: all 0.3s ease;
+}
+
+.nav-submenu.hidden {
+  display: none;
+}
+
+.nav-sub-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.nav-sub-item:hover {
+  background-color: rgba(59, 130, 246, 0.08);
+  color: var(--accent-color);
+}
+
+.nav-sub-item.active {
+  background-color: rgba(59, 130, 246, 0.12);
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.nav-sub-item i {
+  width: 15px;
+  height: 15px;
+}
