@@ -3490,3 +3490,449 @@ window.navigateToSection = function(targetId) {
 document.addEventListener("DOMContentLoaded", () => {
   setupRetailIntelligenceSubmenu();
 });
+// ================= ADVANCED DEMAND FORECASTING & DYNAMIC PRICING ENGINE =================
+
+window.populateProductForecastForm = function() {
+  const select = document.getElementById("fc-product-select");
+  if (!select) return;
+  const val = select.value;
+  const priceInput = document.getElementById("fc-input-price");
+  const costInput = document.getElementById("fc-input-cost");
+  const stockInput = document.getElementById("fc-input-stock");
+  const dailyInput = document.getElementById("fc-input-dailysales");
+
+  if (val === "PROD-01") {
+    if (priceInput) priceInput.value = 2450;
+    if (costInput) costInput.value = 1450;
+    if (stockInput) stockInput.value = 450;
+    if (dailyInput) dailyInput.value = 45;
+  } else if (val === "PROD-02") {
+    if (priceInput) priceInput.value = 1890;
+    if (costInput) costInput.value = 1100;
+    if (stockInput) stockInput.value = 280;
+    if (dailyInput) dailyInput.value = 28;
+  } else if (val === "PROD-03") {
+    if (priceInput) priceInput.value = 4200;
+    if (costInput) costInput.value = 2600;
+    if (stockInput) stockInput.value = 12;
+    if (dailyInput) dailyInput.value = 5;
+  } else if (val === "PROD-04") {
+    if (priceInput) priceInput.value = 3100;
+    if (costInput) costInput.value = 1850;
+    if (stockInput) stockInput.value = 520;
+    if (dailyInput) dailyInput.value = 52;
+  }
+  updatePricingSimulation();
+};
+
+window.runAdvancedDemandForecast = function() {
+  showToast("Running machine learning demand forecast & pricing optimization...");
+  setTimeout(() => {
+    const horizon = parseInt(document.getElementById("fc-input-horizon")?.value || "30", 10);
+    const dailySales = parseFloat(document.getElementById("fc-input-dailysales")?.value || "45");
+    const currentStock = parseInt(document.getElementById("fc-input-stock")?.value || "450", 10);
+    const eventType = document.getElementById("fc-event-select")?.value || "diwali";
+
+    let upliftFactor = 1.0;
+    let eventName = "Normal Days Baseline";
+    if (eventType === "diwali") { upliftFactor = 1.35; eventName = "Diwali Festival Season"; }
+    else if (eventType === "holi") { upliftFactor = 1.20; eventName = "Holi Festival"; }
+    else if (eventType === "wedding") { upliftFactor = 1.45; eventName = "Wedding Season"; }
+    else if (eventType === "monsoon") { upliftFactor = 1.25; eventName = "Monsoon Season"; }
+    else if (eventType === "summer") { upliftFactor = 1.30; eventName = "Summer Season"; }
+
+    const predictedDemand = Math.round(dailysales * horizon * upliftFactor);
+    const unitPrice = parseFloat(document.getElementById("fc-input-price")?.value || "2450");
+    const unitCost = parseFloat(document.getElementById("fc-input-cost")?.value || "1450");
+
+    const expectedRevenue = predictedDemand * unitPrice;
+    const estimatedCOGS = predictedDemand * unitCost;
+    const estimatedProfit = expectedRevenue - estimatedCOGS;
+    const endingStock = currentStock - predictedDemand;
+    const reorderNeeded = endingStock < 100 ? Math.abs(endingStock) + 150 : 0;
+
+    // Update UI summary cards
+    document.getElementById("fc-summary-demand").textContent = `${predictedDemand.toLocaleString()} units`;
+    document.getElementById("fc-summary-period-lbl").textContent = `${horizon} Days`;
+    document.getElementById("fc-summary-revenue").textContent = formatMoney(expectedRevenue / 83.5);
+    document.getElementById("fc-summary-profit").textContent = formatMoney(estimatedProfit / 83.5);
+    document.getElementById("fc-summary-stock").textContent = `${currentStock} units`;
+    document.getElementById("fc-summary-event").textContent = eventName;
+    document.getElementById("fc-summary-reorder").textContent = `${reorderNeeded} units`;
+
+    const riskBadge = document.getElementById("fc-summary-risk");
+    if (endingStock < 0) {
+      riskBadge.className = "trend-badge negative";
+      riskBadge.textContent = "High Stockout Risk";
+    } else {
+      riskBadge.className = "trend-badge positive";
+      riskBadge.textContent = "Adequate Stock";
+    }
+
+    // Update Chart
+    if (typeof retailForecastChartInstance !== 'undefined' && retailForecastChartInstance) {
+      if (horizon === 7) {
+        retailForecastChartInstance.data.labels = ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"];
+        retailForecastChartInstance.data.datasets[0].data = [40, 45, 42, 48, 52, 50, 58].map(v => Math.round(v * upliftFactor));
+        retailForecastChartInstance.data.datasets[1].data = [42, 46, 45, 50, 54, 53, 60].map(v => Math.round(v * upliftFactor));
+      } else {
+        retailForecastChartInstance.data.labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+        retailForecastChartInstance.data.datasets[0].data = [310, 340, 325, 380].map(v => Math.round(v * upliftFactor));
+        retailForecastChartInstance.data.datasets[1].data = [320, 350, 340, 400].map(v => Math.round(v * upliftFactor));
+      }
+      retailForecastChartInstance.update();
+    }
+
+    updatePricingSimulation();
+    showToast(`Forecast generated successfully for ${eventName}!`);
+    logDatabaseNotification("system", `Retail demand forecast executed for ${horizon}d horizon under ${eventName}.`);
+  }, 600);
+};
+
+window.setDiscountPreset = function(pct) {
+  const slider = document.getElementById("discount-slider");
+  if (slider) {
+    slider.value = pct;
+    updatePricingSimulation();
+  }
+};
+
+window.updatePricingSimulation = function() {
+  const slider = document.getElementById("discount-slider");
+  const discPctLabel = document.getElementById("discount-pct-label");
+  const tbody = document.getElementById("pricing-simulation-tbody");
+  if (!slider || !tbody) return;
+
+  const discountPct = parseFloat(slider.value) || 0;
+  if (discPctLabel) discPctLabel.textContent = `${discountPct}%`;
+
+  const currentPrice = parseFloat(document.getElementById("fc-input-price")?.value || "2450");
+  const unitCost = parseFloat(document.getElementById("fc-input-cost")?.value || "1450");
+  const baselineUnits = 1350;
+
+  // Price elasticity approximation: 1% discount increases demand by ~1.5%
+  const elasticDemandMultiplier = 1 + (discountPct * 0.015);
+  const promoUnits = Math.round(baselineUnits * elasticDemandMultiplier);
+  const discountedPrice = currentPrice * (1 - discountPct / 100);
+  const promoRevenue = promoUnits * discountedPrice;
+  const promoCOGS = promoUnits * unitCost;
+  const promoProfit = promoRevenue - promoCOGS;
+  const promoMargin = promoRevenue > 0 ? (promoProfit / promoRevenue) * 100 : 0;
+
+  const baselineRevenue = baselineUnits * currentPrice;
+  const baselineProfit = baselineRevenue - (baselineUnits * unitCost);
+
+  tbody.innerHTML = `
+    <tr>
+      <td><strong>Current Price (0% Disc)</strong></td>
+      <td>₹${currentPrice.toLocaleString()}</td>
+      <td>${baselineUnits.toLocaleString()} units</td>
+      <td>₹${Math.round(baselineRevenue).toLocaleString()}</td>
+      <td>₹${Math.round(baselineUnits * unitCost).toLocaleString()}</td>
+      <td><strong>₹${Math.round(baselineProfit).toLocaleString()}</strong></td>
+      <td>40.8%</td>
+      <td><span class="table-badge delivered">Baseline</span></td>
+    </tr>
+    <tr>
+      <td><strong>Promotional Scenario (${discountPct}% Disc)</strong></td>
+      <td><strong>₹${Math.round(discountedPrice).toLocaleString()}</strong></td>
+      <td>${promoUnits.toLocaleString()} units</td>
+      <td>₹${Math.round(promoRevenue).toLocaleString()}</td>
+      <td>₹${Math.round(promoCOGS).toLocaleString()}</td>
+      <td><strong>₹${Math.round(promoProfit).toLocaleString()}</strong></td>
+      <td>${promoMargin.toFixed(1)}%</td>
+      <td><span class="table-badge ${promoProfit >= baselineProfit ? 'delivered' : 'pending'}">${promoProfit >= baselineProfit ? 'Recommended' : 'Sub-optimal Margin'}</span></td>
+    </tr>
+  `;
+};
+
+window.exportForecastReport = function() {
+  showToast("Exporting Demand Forecast & Dynamic Pricing report...");
+  setTimeout(() => {
+    const csvContent = "data:text/csv;charset=utf-8,SKU,Product,Horizon,PredictedDemand,Revenue,GrossProfit\nPROD-01,Titanium Cool-Coat,30 Days,18450,4520000,1680000";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `CODEX_Demand_Forecast_Report_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast("Forecast report downloaded successfully!");
+  }, 500);
+};
+// ================= WINDOWS-STYLE FORECAST MODAL & DYNAMIC PRICING LOGIC =================
+
+let forecastMiniChartInstance = null;
+let lastFocusedElement = null;
+let activeForecastPayload = null;
+
+window.runAdvancedDemandForecast = function() {
+  const productSelect = document.getElementById("fc-product-select");
+  const priceInput = document.getElementById("fc-input-price");
+  const costInput = document.getElementById("fc-input-cost");
+  const stockInput = document.getElementById("fc-input-stock");
+  const dailyInput = document.getElementById("fc-input-dailysales");
+  const horizonSelect = document.getElementById("fc-input-horizon");
+  const eventSelect = document.getElementById("fc-event-select");
+  const startDateInput = document.getElementById("fc-event-start");
+  const endDateInput = document.getElementById("fc-event-end");
+
+  // 1. Input Validation
+  if (!productSelect || !priceInput || !costInput || !stockInput || !dailyInput || !horizonSelect || !eventSelect || !startDateInput || !endDateInput) {
+    showToast("Error: Forecast form fields not found.");
+    return;
+  }
+
+  const sellingPrice = parseFloat(priceInput.value);
+  const unitCost = parseFloat(costInput.value);
+  const currentStock = parseInt(stockInput.value, 10);
+  const dailySales = parseFloat(dailyInput.value);
+  const horizonDays = parseInt(horizonSelect.value, 10);
+  const startDate = startDateInput.value;
+  const endDate = endDateInput.value;
+
+  if (isNaN(sellingPrice) || sellingPrice <= 0 || isNaN(unitCost) || unitCost < 0 || isNaN(currentStock) || currentStock < 0 || isNaN(dailySales) || dailySales <= 0) {
+    showToast("⚠️ Please enter valid positive numbers for price, cost, stock, and daily sales.");
+    return;
+  }
+
+  if (sellingPrice < unitCost) {
+    showToast("⚠️ Warning: Current selling price is below unit cost price!");
+  }
+
+  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+    showToast("⚠️ Error: Event start date cannot be after end date.");
+    return;
+  }
+
+  // 4. Show loading indicator
+  lastFocusedElement = document.activeElement;
+  showToast("Computing festival demand forecast and pricing model...");
+
+  setTimeout(async () => {
+    try {
+      const eventType = eventSelect.value;
+      let uplift = 1.0;
+      let eventTitle = "Normal Days Baseline";
+      if (eventType === "diwali") { uplift = 1.35; eventTitle = "Diwali Festival Season (+35%)"; }
+      else if (eventType === "holi") { uplift = 1.20; eventTitle = "Holi Festival (+20%)"; }
+      else if (eventType === "wedding") { uplift = 1.45; eventTitle = "Wedding Season (+45%)"; }
+      else if (eventType === "monsoon") { uplift = 1.25; eventTitle = "Monsoon Season (+25%)"; }
+      else if (eventType === "summer") { uplift = 1.30; eventTitle = "Summer Season (+30%)"; }
+      else if (eventType === "custom") { uplift = 1.15; eventTitle = "Custom Promotional Campaign"; }
+
+      const predictedDemand = Math.round(dailySales * horizonDays * uplift);
+      const recommendedDiscount = eventType === "normal" ? 0 : 10; // 10% optimal discount for festivals
+      const discountAmount = (sellingPrice * recommendedDiscount) / 100;
+      const finalPrice = sellingPrice - discountAmount;
+      const expectedRevenue = predictedDemand * finalPrice;
+      const estimatedCOGS = predictedDemand * unitCost;
+      const estimatedGrossProfit = expectedRevenue - estimatedCOGS;
+      const profitMarginPct = expectedRevenue > 0 ? (estimatedGrossProfit / expectedRevenue) * 100 : 0;
+      const projectedEndingStock = currentStock - predictedDemand;
+      const recommendedReorderQty = projectedEndingStock < 50 ? Math.abs(projectedEndingStock) + 200 : 150;
+
+      activeForecastPayload = {
+        productId: productSelect.value,
+        productName: productSelect.options[productSelect.selectedIndex]?.text.split("•")[1]?.trim() || "Retail Product",
+        eventTitle,
+        startDate,
+        endDate,
+        horizonDays,
+        currentStock,
+        sellingPrice,
+        unitCost,
+        recommendedDiscount,
+        finalPrice,
+        predictedDemand,
+        expectedRevenue,
+        estimatedGrossProfit,
+        profitMarginPct,
+        projectedEndingStock,
+        recommendedReorderQty
+      };
+
+      openForecastModal(activeForecastPayload);
+      showToast("Forecast successfully generated!");
+      logDatabaseNotification("system", `Festival demand forecast generated for ${activeForecastPayload.productName} (${eventTitle}).`);
+    } catch (err) {
+      showToast("Forecast failed: Unable to compute simulation.");
+    }
+  }, 500);
+};
+
+window.openForecastModal = function(data) {
+  const modal = document.getElementById("festival-forecast-modal");
+  const bodyContent = document.getElementById("forecast-modal-body-content");
+  if (!modal || !bodyContent) return;
+
+  const isBelowCostWarning = data.finalPrice < data.unitCost;
+
+  bodyContent.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color);">
+        <div>
+          <span style="font-size: 11px; color: #94A3B8; font-weight: 700; text-transform: uppercase;">Selected Product & Event</span>
+          <h4 style="font-size: 15px; font-weight: 800; color: var(--text-primary); margin-top: 2px;">${data.productId} &bull; ${data.productName}</h4>
+          <p style="font-size: 12px; color: var(--accent-color); margin-top: 2px;">Occasion: <strong>${data.eventTitle}</strong> (${data.startDate} to ${data.endDate})</p>
+        </div>
+        <span class="table-badge delivered">Baseline Model Active</span>
+      </div>
+
+      ${isBelowCostWarning ? `
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #EF4444; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;">
+          ⚠️ Warning: Final price (₹${data.finalPrice.toFixed(2)}) is below unit cost (₹${data.unitCost}). Margin rules violated!
+        </div>
+      ` : ''}
+
+      <!-- Compact Result Cards Grid -->
+      <div class="forecast-results-grid">
+        <div class="forecast-result-card">
+          <span class="res-lbl">Current Selling Price</span>
+          <span class="res-val">₹${data.sellingPrice.toLocaleString()}</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Recommended Discount</span>
+          <span class="res-val" style="color: #10B981;">${data.recommendedDiscount}%</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Final Price After Disc.</span>
+          <span class="res-val" style="color: var(--accent-color);">₹${data.finalPrice.toFixed(2)}</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Expected Demand</span>
+          <span class="res-val">${data.predictedDemand.toLocaleString()} units</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Expected Revenue</span>
+          <span class="res-val">₹${Math.round(data.expectedRevenue).toLocaleString()}</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Estimated Gross Profit</span>
+          <span class="res-val" style="color: #16A34A;">₹${Math.round(data.estimatedGrossProfit).toLocaleString()} (${data.profitMarginPct.toFixed(1)}%)</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Current Stock</span>
+          <span class="res-val">${data.currentStock} units</span>
+        </div>
+        <div class="forecast-result-card">
+          <span class="res-lbl">Rec. Replenishment Qty</span>
+          <span class="res-val" style="color: #D97706;">${data.recommendedReorderQty} units</span>
+        </div>
+      </div>
+
+      <!-- Small Demand Graph Container -->
+      <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h5 style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Forecast Demand Timeline (${data.horizonDays} Days)</h5>
+          <span style="font-size: 11px; color: #94A3B8;">Simulated Velocity Curve</span>
+        </div>
+        <div style="height: 180px; width: 100%;">
+          <canvas id="forecastMiniChart"></canvas>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove("hidden");
+  document.getElementById("forecast-modal-card")?.focus();
+  renderMiniDemandChart(data);
+  lucide.createIcons();
+};
+
+window.closeForecastModal = function() {
+  const modal = document.getElementById("festival-forecast-modal");
+  if (modal) modal.classList.add("hidden");
+  if (forecastMiniChartInstance) {
+    forecastMiniChartInstance.destroy();
+    forecastMiniChartInstance = null;
+  }
+  if (lastFocusedElement) {
+    lastFocusedElement.focus();
+  }
+};
+
+function renderMiniDemandChart(data) {
+  const ctx = document.getElementById("forecastMiniChart")?.getContext("2d");
+  if (!ctx) return;
+  if (forecastMiniChartInstance) {
+    forecastMiniChartInstance.destroy();
+  }
+
+  const pointsCount = data.horizonDays === 7 ? 7 : 6;
+  const labels = data.horizonDays === 7 
+    ? ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
+    : ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"];
+
+  const baseVal = Math.round(data.predictedDemand / pointsCount);
+  const chartValues = labels.map((_, i) => Math.round(baseVal * (0.85 + Math.sin(i * 0.6) * 0.25 + (i * 0.05))));
+
+  forecastMiniChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Predicted Demand (Units)",
+        data: chartValues,
+        borderColor: "#3B82F6",
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 4,
+        pointBackgroundColor: "#3B82F6"
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleFont: { family: 'Plus Jakarta Sans', size: 12, weight: 'bold' },
+          bodyFont: { family: 'Plus Jakarta Sans', size: 11 },
+          padding: 8,
+          cornerRadius: 6
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans', size: 10 } } },
+        y: { grid: { color: "rgba(226, 232, 240, 0.3)" }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans', size: 10 } } }
+      }
+    }
+  });
+}
+
+window.confirmForecastAction = function() {
+  if (!activeForecastPayload) return;
+  const db = DB.get();
+  // Save or sync recommendation to inventory/database storage
+  const prod = (db.productsCatalog || []).find(p => p.id === activeForecastPayload.productId);
+  if (prod) {
+    prod.suggestedPrice = activeForecastPayload.finalPrice;
+    prod.recommendedReorderQty = activeForecastPayload.recommendedReorderQty;
+    DB.save(db);
+  }
+  showToast(`Successfully saved forecast & pricing recommendations for ${activeForecastPayload.productName}!`);
+  logDatabaseNotification("system", `Host confirmed forecast recommendations for ${activeForecastPayload.productId}.`);
+  closeForecastModal();
+  renderAllFromDB();
+};
+
+// Event Listeners for Modal Closing (Escape key & Overlay click)
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    closeForecastModal();
+  }
+});
+
+document.addEventListener("click", (e) => {
+  const modal = document.getElementById("festival-forecast-modal");
+  const modalCard = document.getElementById("forecast-modal-card");
+  if (modal && !modal.classList.contains("hidden") && e.target === modal) {
+    closeForecastModal();
+  }
+});
+
+document.getElementById("forecast-modal-close-btn")?.addEventListener("click", closeForecastModal);
