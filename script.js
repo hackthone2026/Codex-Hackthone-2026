@@ -3986,3 +3986,781 @@ document.addEventListener("keydown", (e) => {
     closeForecastModal();
   }
 });
+let dynamicPricingChartInstance = null;
+
+function renderDynamicPricingAdvisorTable() {
+  const db = DB.get();
+  const tbody = document.getElementById("dynamic-pricing-table-body");
+  const analyzedEl = document.getElementById("dp-summary-analyzed");
+  const demandEl = document.getElementById("dp-summary-demand");
+  const revenueEl = document.getElementById("dp-summary-revenue");
+  const marginEl = document.getElementById("dp-summary-margin");
+
+  if (!tbody) return;
+
+  const products = db.productsCatalog || [];
+  if (analyzedEl) analyzedEl.textContent = products.length;
+
+  let totalDemand = 0;
+  let totalRevenue = 0;
+  let totalMarginSum = 0;
+
+  const rowsHtml = products.map((prod, idx) => {
+    const skuId = prod.id || `PROD-0${idx+1}`;
+    const stock = prod.quantity !== undefined ? prod.quantity : 100;
+    const currentPrice = prod.sellingPrice || (idx === 0 ? 2450 : idx === 1 ? 1890 : idx === 2 ? 4200 : 3100);
+    const unitCost = currentPrice * 0.58;
+    
+    let suggestedPrice = currentPrice;
+    let reason = "Optimal equilibrium: Maintain current market price.";
+    let predDemand = Math.round((stock < 50 ? 140 : 85) * (currentPrice > 3500 ? 0.85 : 1.15));
+    
+    if (stock < 30) {
+      suggestedPrice = Math.round(currentPrice * 1.08);
+      reason = "High demand and low stock";
+    } else if (stock > 300) {
+      suggestedPrice = Math.round(currentPrice * 0.95);
+      reason = "Low demand and excess inventory";
+    } else if (idx === 0) {
+      suggestedPrice = Math.round(currentPrice * 1.05);
+      reason = "Festival demand increase";
+    } else if (idx === 2) {
+      suggestedPrice = Math.round(currentPrice * 1.10);
+      reason = "Price adjustment to protect profit margin";
+    } else {
+      reason = "Seasonal demand change";
+    }
+
+    const priceDeltaPct = ((suggestedPrice - currentPrice) / currentPrice) * 100;
+    const expectedRev = predDemand * suggestedPrice;
+    const profitMargin = ((suggestedPrice - unitCost) / suggestedPrice) * 100;
+
+    totalDemand += predDemand;
+    totalRevenue += expectedRev;
+    totalMarginSum += profitMargin;
+
+    const deltaClass = priceDeltaPct > 0 ? "positive" : (priceDeltaPct < 0 ? "negative" : "positive");
+    const deltaSign = priceDeltaPct > 0 ? "+" : "";
+
+    return `
+      <tr>
+        <td><strong>${skuId}</strong></td>
+        <td>${prod.name}</td>
+        <td>${stock} units</td>
+        <td>₹${currentPrice.toLocaleString()}</td>
+        <td><strong style="color: var(--accent-color);">₹${suggestedPrice.toLocaleString()}</strong></td>
+        <td><span class="trend-badge ${deltaClass}">${deltaSign}${priceDeltaPct.toFixed(1)}%</span></td>
+        <td>${predDemand} units</td>
+        <td><strong>₹${expectedRev.toLocaleString()}</strong></td>
+        <td>${profitMargin.toFixed(1)}%</td>
+        <td><small>${reason}</small></td>
+        <td>
+          <button class="small-btn" onclick="openProductDetailModal('${skuId}')">View Forecast</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+
+  tbody.innerHTML = rowsHtml;
+
+  const avgDemand = products.length > 0 ? Math.round(totalDemand / products.length) : 0;
+  const avgMargin = products.length > 0 ? (totalMarginSum / products.length).toFixed(1) : 0;
+
+  if (demandEl) demandEl.textContent = `${avgDemand} units`;
+  if (revenueEl) revenueEl.textContent = formatMoney(totalRevenue / 83.5);
+  if (marginEl) marginEl.textContent = `${avgMargin}%`;
+}
+
+function initDynamicPricingChart() {
+  const ctx = document.getElementById("dynamicPricingChart")?.getContext("2d");
+  if (!ctx) return;
+
+  if (dynamicPricingChartInstance) {
+    dynamicPricingChartInstance.destroy();
+  }
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 250);
+  gradient.addColorStop(0, "rgba(59, 130, 246, 0.35)");
+  gradient.addColorStop(1, "rgba(59, 130, 246, 0.0)");
+
+  dynamicPricingChartInstance = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["₹1,500", "₹1,800", "₹2,100", "₹2,450 (Current)", "₹2,800", "₹3,100"],
+      datasets: [
+        {
+          label: "Predicted Demand (Units)",
+          data: [420, 380, 330, 280, 220, 160],
+          borderColor: "#3B82F6",
+          backgroundColor: gradient,
+          borderWidth: 3,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 5,
+          pointBackgroundColor: "#2563EB"
+        },
+        {
+          label: "Elasticity Optimal Curve",
+          data: [400, 360, 310, 270, 210, 150],
+          borderColor: "#10B981",
+          borderWidth: 2,
+          borderDash: [4, 4],
+          fill: false,
+          tension: 0.3,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { color: '#94A3B8', font: { family: 'Plus Jakarta Sans', size: 12 } } },
+        tooltip: {
+          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+          titleFont: { family: 'Plus Jakarta Sans', size: 13, weight: 'bold' },
+          bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+          padding: 10,
+          cornerRadius: 8
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, border: { display: false }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans' } } },
+        y: { grid: { color: "rgba(226, 232, 240, 0.4)" }, border: { display: false }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans' } } }
+      }
+    }
+  });
+}
+
+function updateDynamicPricingChart() {
+  const select = document.getElementById("dp-chart-sku-select");
+  if (!select || !dynamicPricingChartInstance) return;
+  const sku = select.value;
+  
+  let factor = 1.0;
+  if (sku === "PROD-02") factor = 0.85;
+  else if (sku === "PROD-03") factor = 0.5;
+  else if (sku === "PROD-04") factor = 1.2;
+
+  dynamicPricingChartInstance.data.datasets[0].data = [420, 380, 330, 280, 220, 160].map(v => Math.round(v * factor));
+  dynamicPricingChartInstance.data.datasets[1].data = [400, 360, 310, 270, 210, 150].map(v => Math.round(v * factor));
+  dynamicPricingChartInstance.update();
+  showToast(`Updated price-demand sensitivity curve for ${sku}`);
+}
+let currentInventoryFilter = "all";
+
+function setInventoryFilter(filterType, btn) {
+  currentInventoryFilter = filterType;
+  document.querySelectorAll("#inventory-status-filter-group .pill").forEach(p => p.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  renderSmartInventorySection();
+}
+
+function renderSmartInventorySection() {
+  const db = DB.get();
+  const products = db.productsCatalog || [];
+  
+  const totalProducts = products.length;
+  let lowStockCount = 0;
+  let totalPredictedDemand = 0;
+  let totalReorderBudget = 0;
+  let totalInventoryValue = 0;
+  let excessInventoryValue = 0;
+
+  const today = new Date();
+
+  // Map products with calculated inventory intelligence
+  const enhancedProducts = products.map((prod, idx) => {
+    const sku = prod.id || `SKU-10${idx+1}`;
+    const stock = prod.quantity !== undefined ? prod.quantity : 100;
+    const safetyStock = prod.safetyStock || (idx === 0 ? 50 : idx === 1 ? 40 : idx === 2 ? 25 : 60);
+    const leadTimeDays = prod.leadTimeDays || 7;
+    const incoming = prod.incomingStock || 0;
+    const unitCost = prod.unitCostUSD ? prod.unitCostUSD * 83.5 : (2450 * 0.6);
+    
+    // Predicted Demand based on forecast module or velocity
+    const predDemand30 = prod.predictedDemand || (stock < 30 ? 180 : 120);
+    totalPredictedDemand += predDemand30;
+
+    const dailyDemand = predDemand30 / 30;
+    const leadTimeDemand = dailyDemand * leadTimeDays;
+    const reorderPoint = leadTimeDemand + safetyStock;
+
+    // Recommended Order Qty = Target Stock - Current Stock - Incoming Stock
+    const targetStock = reorderPoint + (dailyDemand * 15); // 15-day buffer
+    const recOrderQty = Math.max(0, Math.round(targetStock - stock - incoming));
+
+    let status = "Healthy";
+    if (stock <= safetyStock * 0.6 || stock < 15) {
+      status = "Critical";
+      lowStockCount++;
+    } else if (stock <= reorderPoint) {
+      status = "Reorder Soon";
+      lowStockCount++;
+    } else if (stock > targetStock * 1.5) {
+      status = "Overstock";
+      excessInventoryValue += (stock - targetStock) * unitCost;
+    }
+
+    const reorderCost = recOrderQty * unitCost;
+    if (status === "Critical" || status === "Reorder Soon") {
+      totalReorderBudget += reorderCost;
+    }
+
+    totalInventoryValue += stock * unitCost;
+
+    // Estimated reorder date
+    const daysUntilReorder = Math.max(1, Math.floor((stock - reorderPoint) / Math.max(0.5, dailyDemand)));
+    const reorderDate = new Date();
+    reorderDate.setDate(today.getDate() + daysUntilReorder);
+    const estDateStr = reorderDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+    return {
+      sku,
+      name: prod.name,
+      stock,
+      safetyStock,
+      predDemand30,
+      recOrderQty,
+      estDateStr,
+      status,
+      unitCost,
+      reorderCost,
+      reorderPoint,
+      incoming
+    };
+  });
+
+  // Update KPI Cards
+  const kpiTotal = document.getElementById("inv-kpi-total-products");
+  const kpiLow = document.getElementById("inv-kpi-low-stock");
+  const kpiDemand = document.getElementById("inv-kpi-predicted-demand");
+  const kpiBudget = document.getElementById("inv-kpi-reorder-budget");
+
+  if (kpiTotal) kpiTotal.textContent = totalProducts;
+  if (kpiLow) kpiLow.textContent = lowStockCount;
+  if (kpiDemand) kpiDemand.textContent = `${totalPredictedDemand.toLocaleString()} units`;
+  if (kpiBudget) kpiBudget.textContent = formatMoney(totalReorderBudget / 83.5);
+
+  // Filter products based on active tab
+  let filteredProducts = enhancedProducts;
+  if (currentInventoryFilter !== "all") {
+    filteredProducts = enhancedProducts.filter(p => p.status.toLowerCase().replace(/\s+/g, '') === currentInventoryFilter);
+  }
+
+  // Render Table Body
+  const tableBody = document.getElementById("smart-inventory-table-body");
+  if (tableBody) {
+    if (filteredProducts.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: #94A3B8;">No inventory items found for filter "${currentInventoryFilter}".</td></tr>`;
+    } else {
+      tableBody.innerHTML = filteredProducts.map(p => {
+        let badgeCls = "delivered";
+        if (p.status === "Critical") badgeCls = "cancelled";
+        else if (p.status === "Reorder Soon") badgeCls = "pending";
+        else if (p.status === "Overstock") badgeCls = "pending";
+
+        return `
+          <tr>
+            <td><strong>${p.name}</strong><br><small style="color: #94A3B8;">${p.sku}</small></td>
+            <td>${p.stock} units</td>
+            <td>${p.safetyStock} units</td>
+            <td>${p.predDemand30} units</td>
+            <td><strong>${p.recOrderQty} units</strong></td>
+            <td style="color: #64748B;">${p.estDateStr}</td>
+            <td><span class="table-badge ${badgeCls}">${p.status}</span></td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                <button class="small-btn" onclick="openCreatePurchaseOrderModal('${p.sku}')" title="Create PO">Order</button>
+                <button class="small-btn" onclick="markInventoryAsReceived('${p.sku}')" title="Mark as Received (+ Qty)">Receive</button>
+                <button class="small-btn" onclick="updateInventoryStockDirect('${p.sku}')" title="Update Stock">Edit</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+  }
+
+  // Render Alerts
+  const alertsContainer = document.getElementById("smart-inventory-alerts-container");
+  if (alertsContainer) {
+    const criticalItems = enhancedProducts.filter(p => p.status === "Critical" || p.status === "Reorder Soon");
+    if (criticalItems.length === 0) {
+      alertsContainer.innerHTML = `<div style="padding: 12px; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 8px; color: #059669; font-size: 12.5px;">✅ All inventory levels are healthy. No immediate stockouts predicted.</div>`;
+    } else {
+      alertsContainer.innerHTML = criticalItems.map(item => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; font-size: 12.5px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="alert-triangle" style="width: 16px; height: 16px; color: ${item.status === 'Critical' ? '#EF4444' : '#F59E0B'};"></i>
+            <div>
+              <strong>${item.name} (${item.sku})</strong> &bull; Current Stock: ${item.stock} units (Safety: ${item.safetyStock}). Expected stockout in ~${Math.max(1, Math.floor(item.stock / (item.predDemand30 / 30)))} days.
+            </div>
+          </div>
+          <button class="small-btn" style="background: var(--accent-color); color: white; border: none;" onclick="openCreatePurchaseOrderModal('${item.sku}')">Replenish Now</button>
+        </div>
+      `).join("");
+      lucide.createIcons();
+    }
+  }
+
+  // Render Cost Analysis & Savings
+  const costBreakdown = document.getElementById("inventory-cost-breakdown");
+  const savingsBreakdown = document.getElementById("inventory-savings-breakdown");
+
+  if (costBreakdown) {
+    costBreakdown.innerHTML = `
+      <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">
+        <span>Total Inventory Valuation:</span>
+        <strong>${formatMoney(totalInventoryValue / 83.5)}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px solid var(--border-color);">
+        <span>Recommended Procurement Budget:</span>
+        <strong style="color: var(--accent-color);">${formatMoney(totalReorderBudget / 83.5)}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Excess / Overstock Capital:</span>
+        <strong style="color: #D97706;">${formatMoney(excessInventoryValue / 83.5)}</strong>
+      </div>
+    `;
+  }
+
+  if (savingsBreakdown) {
+    const estSavings = totalReorderBudget * 0.12;
+    const lostSalesPrevented = lowStockCount * 45000;
+    savingsBreakdown.innerHTML = `
+      <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px solid rgba(59,130,246,0.2);">
+        <span>Procurement Cost Savings (Bulk/AI):</span>
+        <strong style="color: #10B981;">${formatMoney(estSavings / 83.5)}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px solid rgba(59,130,246,0.2);">
+        <span>Stockout Loss Prevention:</span>
+        <strong style="color: #10B981;">${formatMoney(lostSalesPrevented / 83.5)}</strong>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Overall Efficiency Gain:</span>
+        <strong style="color: var(--accent-color);">+18.4% Net ROI</strong>
+      </div>
+    `;
+  }
+}
+
+// Purchase Order Modal Handlers
+window.openCreatePurchaseOrderModal = function(preselectedSku) {
+  const modal = document.getElementById("purchase-order-modal");
+  const select = document.getElementById("po-product-select");
+  const qtyInput = document.getElementById("po-qty");
+  const costInput = document.getElementById("po-unit-cost");
+  const dateInput = document.getElementById("po-expected-date");
+
+  if (!modal || !select) return;
+
+  const db = DB.get();
+  const products = db.productsCatalog || [];
+
+  select.innerHTML = products.map(p => `
+    <option value="${p.id}" ${p.id === preselectedSku ? 'selected' : ''}>${p.name} (${p.id}) - Stock: ${p.quantity}</option>
+  `).join("");
+
+  const selectedProd = products.find(p => p.id === preselectedSku) || products[0];
+  if (selectedProd) {
+    if (qtyInput) qtyInput.value = selectedProd.recOrderQty || 150;
+    if (costInput) costInput.value = Math.round((selectedProd.unitCostUSD ? selectedProd.unitCostUSD * 83.5 : 1250));
+  }
+
+  const deliveryDate = new Date();
+  deliveryDate.setDate(deliveryDate.getDate() + 7);
+  if (dateInput) dateInput.value = deliveryDate.toISOString().slice(0, 10);
+
+  updatePoModalCalculations();
+  modal.classList.remove("hidden");
+  lucide.createIcons();
+};
+
+window.closePurchaseOrderModal = function() {
+  const modal = document.getElementById("purchase-order-modal");
+  if (modal) modal.classList.add("hidden");
+};
+
+window.updatePoModalCalculations = function() {
+  const qty = parseFloat(document.getElementById("po-qty")?.value) || 0;
+  const cost = parseFloat(document.getElementById("po-unit-cost")?.value) || 0;
+  const totalDisplay = document.getElementById("po-total-cost-display");
+  if (totalDisplay) {
+    totalDisplay.textContent = `₹ ${(qty * cost).toLocaleString()}`;
+  }
+};
+
+window.handlePurchaseOrderSubmit = function(e) {
+  e.preventDefault();
+  const sku = document.getElementById("po-product-select").value;
+  const supplier = document.getElementById("po-supplier").value.trim();
+  const qty = parseInt(document.getElementById("po-qty").value, 10) || 0;
+  const unitCost = parseFloat(document.getElementById("po-unit-cost").value) || 0;
+  const expectedDate = document.getElementById("po-expected-date").value;
+
+  if (qty <= 0 || unitCost <= 0) {
+    showToast("⚠️ Please enter valid quantity and unit cost.");
+    return;
+  }
+
+  const db = DB.get();
+  const prod = (db.productsCatalog || []).find(p => p.id === sku);
+  if (prod) {
+    prod.incomingStock = (prod.incomingStock || 0) + qty;
+  }
+  DB.save(db);
+
+  closePurchaseOrderModal();
+  renderAllFromDB();
+  showToast(`Purchase Order created successfully for ${prod ? prod.name : sku} (${qty} units)! Stock will update upon receiving.`);
+  logDatabaseNotification("supply", `Purchase Order created for ${sku} (${qty} units) with vendor ${supplier}.`);
+};
+
+window.markInventoryAsReceived = function(sku) {
+  const db = DB.get();
+  const prod = (db.productsCatalog || []).find(p => p.id === sku);
+  if (!prod) return;
+
+  const addQty = prompt(`Enter received shipment quantity for ${prod.name}:`, prod.incomingStock > 0 ? prod.incomingStock : 100);
+  const qtyNum = parseInt(addQty, 10);
+  if (isNaN(qtyNum) || qtyNum <= 0) return;
+
+  prod.quantity = (prod.quantity || 0) + qtyNum;
+  prod.incomingStock = Math.max(0, (prod.incomingStock || 0) - qtyNum);
+  DB.save(db);
+  renderAllFromDB();
+  showToast(`Successfully received ${qtyNum} units for ${prod.name}! Stock updated.`);
+  logDatabaseNotification("supply", `Shipment received for ${sku}: +${qtyNum} units added to physical stock.`);
+};
+
+window.updateInventoryStockDirect = function(sku) {
+  const db = DB.get();
+  const prod = (db.productsCatalog || []).find(p => p.id === sku);
+  if (!prod) return;
+
+  const newStockStr = prompt(`Update current physical stock quantity for ${prod.name}:`, prod.quantity);
+  const newStock = parseInt(newStockStr, 10);
+  if (isNaN(newStock) || newStock < 0) return;
+
+  prod.quantity = newStock;
+  DB.save(db);
+  renderAllFromDB();
+  showToast(`Stock updated to ${newStock} units for ${prod.name}.`);
+  logDatabaseNotification("system", `Physical stock manually updated for ${sku} to ${newStock} units.`);
+};
+// ================= RETAIL RISK MONITORING & ALERT CENTER =================
+
+function generateSmartRetailAlerts() {
+  const db = DB.get();
+  if (!db.retailAlerts) {
+    db.retailAlerts = [
+      {
+        id: "ALT-901",
+        timestamp: "Today • 10:45 AM",
+        rawTime: Date.now() - 3600000,
+        sku: "PROD-03",
+        productName: "Dynamic Viscometer Sensors",
+        category: "Stock Risk",
+        description: "Stock critically low (12 units remaining). Safety threshold is 30 units.",
+        severity: "Critical",
+        recommendation: "Review stock and create a purchase order immediately.",
+        status: "Active",
+        sourceData: { stock: 12, safety: 30, leadTime: 7 }
+      },
+      {
+        id: "ALT-902",
+        timestamp: "Sep 24 • 02:15 PM",
+        rawTime: Date.now() - 86400000,
+        sku: "PROD-02",
+        productName: "Polyurethane Amino Resin #5",
+        category: "Price Risk",
+        description: "Competitor price drop detected for Polyurethane Emulsion series in regional market.",
+        severity: "Warning",
+        recommendation: "Review pricing in Dynamic Pricing Advisor to maintain margins.",
+        status: "Active",
+        sourceData: { currentPrice: 1890, competitorPrice: 1750 }
+      },
+      {
+        id: "ALT-903",
+        timestamp: "Sep 22 • 09:30 AM",
+        rawTime: Date.now() - 172800000,
+        sku: "PROD-01",
+        productName: "Titanium Cool-Coat Emulsion",
+        category: "Demand Risk",
+        description: "Festival season demand surge predicted (+35% uplift for Diwali).",
+        severity: "Informational",
+        recommendation: "Increase safety stock buffer and review promotional pricing.",
+        status: "Active",
+        sourceData: { expectedDemand: 520, uplift: "+35%" }
+      }
+    ];
+  }
+
+  // Automatically evaluate products catalog for new risks
+  (db.productsCatalog || []).forEach(prod => {
+    const stock = prod.quantity !== undefined ? prod.quantity : 50;
+    const existingAlert = db.retailAlerts.find(a => a.sku === prod.id && a.status === "Active");
+
+    if (stock <= 15 && !existingAlert) {
+      db.retailAlerts.unshift({
+        id: `ALT-${Math.floor(1000 + Math.random() * 9000)}`,
+        timestamp: "Just now",
+        rawTime: Date.now(),
+        sku: prod.id,
+        productName: prod.name,
+        category: "Stock Risk",
+        description: `Stock critically low (${stock} units). Immediate reorder recommended.`,
+        severity: "Critical",
+        recommendation: "Create purchase order in Smart Inventory.",
+        status: "Active",
+        sourceData: { stock, safety: 30 }
+      });
+    }
+  });
+
+  DB.save(db);
+  renderRetailAlertsTable();
+}
+
+function renderRetailAlertsTable() {
+  const db = DB.get();
+  const alerts = db.retailAlerts || [];
+
+  const searchQuery = (document.getElementById("alert-search-input")?.value || "").toLowerCase().trim();
+  const categoryFilter = document.getElementById("alert-category-filter")?.value || "all";
+  const statusFilter = document.getElementById("alert-status-filter")?.value || "all";
+  const sortBy = document.getElementById("alert-sort-select")?.value || "newest";
+
+  // Calculate KPI Counts
+  let criticalCount = 0;
+  let lowStockCount = 0;
+  let demandSpikeCount = 0;
+  let priceWarningCount = 0;
+
+  alerts.forEach(a => {
+    if (a.status === "Active") {
+      if (a.severity === "Critical") criticalCount++;
+      if (a.category === "Stock Risk") lowStockCount++;
+      if (a.category === "Demand Risk") demandSpikeCount++;
+      if (a.category === "Price Risk") priceWarningCount++;
+    }
+  });
+
+  const kpiCritEl = document.getElementById("alert-kpi-critical");
+  const kpiLowEl = document.getElementById("alert-kpi-lowstock");
+  const kpiDemEl = document.getElementById("alert-kpi-demand");
+  const kpiPriEl = document.getElementById("alert-kpi-price");
+
+  if (kpiCritEl) kpiCritEl.textContent = criticalCount;
+  if (kpiLowEl) kpiLowEl.textContent = lowStockCount;
+  if (kpiDemEl) kpiDemEl.textContent = demandSpikeCount;
+  if (kpiPriEl) kpiPriEl.textContent = priceWarningCount;
+
+  // Filter & Search
+  let filtered = alerts.filter(a => {
+    const matchSearch = !searchQuery || a.productName.toLowerCase().includes(searchQuery) || a.sku.toLowerCase().includes(searchQuery) || a.description.toLowerCase().includes(searchQuery);
+    const matchCat = categoryFilter === "all" || a.category === categoryFilter;
+    const matchStatus = statusFilter === "all" || a.status === statusFilter;
+    return matchSearch && matchCat && matchStatus;
+  });
+
+  // Sort
+  filtered.sort((x, y) => {
+    if (sortBy === "oldest") return x.rawTime - y.rawTime;
+    if (sortBy === "severity") {
+      const rank = { "Critical": 3, "Warning": 2, "Informational": 1 };
+      return (rank[y.severity] || 0) - (rank[x.severity] || 0);
+    }
+    return y.rawTime - x.rawTime; // newest
+  });
+
+  const matchCountLabel = document.getElementById("alert-match-count");
+  if (matchCountLabel) matchCountLabel.textContent = filtered.length;
+
+  const tbody = document.getElementById("retail-alerts-table-body");
+  if (!tbody) return;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 32px; color: #94A3B8;">No alerts matching current filters or search query.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => {
+    let sevBadge = "delivered";
+    if (a.severity === "Critical") sevBadge = "cancelled";
+    else if (a.severity === "Warning") sevBadge = "pending";
+
+    let statBadge = "delivered";
+    if (a.status === "Active") statBadge = "cancelled";
+    else if (a.status === "Acknowledged") statBadge = "pending";
+    else if (a.status === "Dismissed") statBadge = "pending";
+
+    return `
+      <tr>
+        <td style="color: #64748B; font-size: 11.5px;">${a.timestamp}</td>
+        <td><strong>${a.productName}</strong><br><small style="color: #94A3B8;">${a.sku}</small></td>
+        <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--accent-color);">${a.category}</span></td>
+        <td>${a.description}</td>
+        <td><span class="table-badge ${sevBadge}">${a.severity}</span></td>
+        <td><small>${a.recommendation}</small></td>
+        <td><span class="table-badge ${statBadge}">${a.status}</span></td>
+        <td>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <button class="small-btn" onclick="openAlertDetailsModal('${a.id}')">View</button>
+            <button class="small-btn" style="background: var(--accent-color); color: white; border: none;" onclick="takeAlertAction('${a.id}')">Action</button>
+            ${a.status === 'Active' ? `<button class="small-btn" onclick="acknowledgeAlert('${a.id}')">Ack</button>` : ''}
+            ${a.status !== 'Resolved' ? `<button class="small-btn" style="background: #10B981; color: white; border: none;" onclick="resolveAlert('${a.id}')">Resolve</button>` : ''}
+            <button class="small-btn delete-row-btn" onclick="dismissAlert('${a.id}')">Dismiss</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+  lucide.createIcons();
+}
+
+window.filterAlertsByKpi = function(kpiType) {
+  const catFilter = document.getElementById("alert-category-filter");
+  const statFilter = document.getElementById("alert-status-filter");
+  if (!catFilter || !statFilter) return;
+
+  statFilter.value = "Active";
+  if (kpiType === "critical") {
+    catFilter.value = "all";
+  } else if (kpiType === "stock") {
+    catFilter.value = "Stock Risk";
+  } else if (kpiType === "demand") {
+    catFilter.value = "Demand Risk";
+  } else if (kpiType === "price") {
+    catFilter.value = "Price Risk";
+  }
+  renderRetailAlertsTable();
+  showToast(`Filtered alerts by ${kpiType}`);
+};
+
+window.resetAlertFilters = function() {
+  const searchInput = document.getElementById("alert-search-input");
+  const catFilter = document.getElementById("alert-category-filter");
+  const statFilter = document.getElementById("alert-status-filter");
+  const sortSelect = document.getElementById("alert-sort-select");
+
+  if (searchInput) searchInput.value = "";
+  if (catFilter) catFilter.value = "all";
+  if (statFilter) statFilter.value = "all";
+  if (sortSelect) sortSelect.value = "newest";
+  renderRetailAlertsTable();
+  showToast("Alert filters cleared.");
+};
+
+window.openAlertDetailsModal = function(alertId) {
+  const db = DB.get();
+  const alert = (db.retailAlerts || []).find(a => a.id === alertId);
+  if (!alert) return;
+
+  document.getElementById("modal-alert-title").textContent = `Alert Details: ${alert.id}`;
+  const body = document.getElementById("modal-alert-body-content");
+  const actionBtn = document.getElementById("modal-alert-action-btn");
+
+  body.innerHTML = `
+    <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;">
+      <div style="display: flex; justify-content: space-between; background: var(--bg-main); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <span><strong>Product:</strong> ${alert.productName} (${alert.sku})</span>
+        <span class="table-badge ${alert.severity === 'Critical' ? 'cancelled' : 'pending'}">${alert.severity}</span>
+      </div>
+      <div>
+        <strong>Category:</strong> ${alert.category}<br>
+        <strong>Status:</strong> ${alert.status}<br>
+        <strong>Timestamp:</strong> ${alert.timestamp}
+      </div>
+      <div style="background: var(--bg-main); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+        <strong>Risk Explanation:</strong><br>${alert.description}
+      </div>
+      <div style="background: rgba(59,130,246,0.06); padding: 12px; border-radius: 8px; border: 1px solid rgba(59,130,246,0.2);">
+        <strong>Recommended Action:</strong><br>${alert.recommendation}
+      </div>
+    </div>
+  `;
+
+  if (actionBtn) {
+    actionBtn.onclick = () => {
+      closeAlertDetailsModal();
+      takeAlertAction(alert.id);
+    };
+  }
+
+  document.getElementById("alert-details-modal").classList.remove("hidden");
+  lucide.createIcons();
+};
+
+window.closeAlertDetailsModal = function() {
+  document.getElementById("alert-details-modal")?.classList.add("hidden");
+};
+
+window.takeAlertAction = function(alertId) {
+  const db = DB.get();
+  const alert = (db.retailAlerts || []).find(a => a.id === alertId);
+  if (!alert) return;
+
+  if (alert.category === "Stock Risk") {
+    navigateToSection("smart-inventory");
+    showToast(`Routed to Smart Inventory for ${alert.productName}`);
+  } else if (alert.category === "Demand Risk") {
+    navigateToSection("demand-forecasting");
+    showToast(`Routed to Demand Forecasting for ${alert.productName}`);
+  } else if (alert.category === "Price Risk") {
+    navigateToSection("dynamic-pricing");
+    showToast(`Routed to Dynamic Pricing Advisor for ${alert.productName}`);
+  } else {
+    navigateToSection("analytics");
+    showToast(`Routed to Stock & Orders`);
+  }
+};
+
+window.acknowledgeAlert = function(alertId) {
+  const db = DB.get();
+  const alert = (db.retailAlerts || []).find(a => a.id === alertId);
+  if (alert) {
+    alert.status = "Acknowledged";
+    DB.save(db);
+    renderRetailAlertsTable();
+    showToast(`Alert ${alertId} acknowledged.`);
+  }
+};
+
+window.resolveAlert = function(alertId) {
+  const db = DB.get();
+  const alert = (db.retailAlerts || []).find(a => a.id === alertId);
+  if (alert) {
+    alert.status = "Resolved";
+    DB.save(db);
+    renderRetailAlertsTable();
+    showToast(`Alert ${alertId} marked as resolved.`);
+  }
+};
+
+window.dismissAlert = function(alertId) {
+  if (!confirm("Are you sure you want to dismiss this alert?")) return;
+  const db = DB.get();
+  const alert = (db.retailAlerts || []).find(a => a.id === alertId);
+  if (alert) {
+    alert.status = "Dismissed";
+    DB.save(db);
+    renderRetailAlertsTable();
+    showToast(`Alert ${alertId} dismissed.`);
+  }
+};
+
+window.exportAlertsCSV = function() {
+  const db = DB.get();
+  const alerts = db.retailAlerts || [];
+  if (alerts.length === 0) {
+    showToast("No alerts to export!");
+    return;
+  }
+  const headers = ["Alert ID", "Timestamp", "SKU", "Product Name", "Category", "Description", "Severity", "Recommendation", "Status"];
+  const rows = alerts.map(a => [
+    `"${a.id}"`, `"${a.timestamp}"`, `"${a.sku}"`, `"${a.productName}"`, `"${a.category}"`, `"${a.description.replace(/"/g, '""')}"`, `"${a.severity}"`, `"${a.recommendation.replace(/"/g, '""')}"`, `"${a.status}"`
+  ]);
+  downloadCSV([headers.join(","), ...rows.map(r => r.join(","))].join("\r\n"), "CODEX_Retail_Risk_Alerts");
+};

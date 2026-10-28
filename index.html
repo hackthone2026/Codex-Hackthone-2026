@@ -1587,47 +1587,266 @@
           <div class="title-with-btn">
             <div>
               <h2>Dynamic Pricing Advisor</h2>
-              <p>AI-driven price optimization based on inventory scarcity and demand elasticity.</p>
+              <p>AI-driven price optimization based on inventory scarcity, festival seasonality, and demand elasticity.</p>
             </div>
-            <button class="primary-btn" onclick="showToast('Computing price recommendations...')">
-              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Optimize Margins
+            <button class="primary-btn" onclick="renderDynamicPricingAdvisorTable(); showToast('Pricing advisor models refreshed successfully!');">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Run Pricing Optimization
             </button>
           </div>
         </div>
+
+        <!-- Top Summary Cards -->
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card">
+            <div class="stat-icon"><i data-lucide="package"></i></div>
+            <p class="stat-title">Products Analyzed</p>
+            <h3 class="stat-val" id="dp-summary-analyzed">4</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Active Catalog SKUs</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #10B981;"><i data-lucide="trending-up"></i></div>
+            <p class="stat-title">Avg Expected Demand</p>
+            <h3 class="stat-val" id="dp-summary-demand">340 units</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Projected 30-day velocity</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #3B82F6;"><i data-lucide="indian-rupee"></i></div>
+            <p class="stat-title">Expected Revenue Impact</p>
+            <h3 class="stat-val" id="dp-summary-revenue">₹98,400</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Optimized margin projection</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #7C3AED;"><i data-lucide="percent"></i></div>
+            <p class="stat-title">Avg Profit Margin</p>
+            <h3 class="stat-val" id="dp-summary-margin">41.2%</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Target equilibrium threshold</p>
+          </div>
+        </div>
+
+        <!-- Product Pricing Table Card -->
         <div class="card">
-          <table class="data-table">
-            <thead>
-              <tr><th>SKU ID</th><th>Product Name</th><th>Current Stock</th><th>Selling Price</th><th>Suggested Price</th><th>Price Delta</th><th>Reason</th></tr>
-            </thead>
-            <tbody id="dynamic-pricing-table-body">
-              <tr><td><strong>SKU-101</strong></td><td>Titanium Cool-Coat Emulsion</td><td>450 units</td><td>₹2,450</td><td><strong>₹2,572</strong></td><td><span class="trend-badge positive">+5.0%</span></td><td>Optimal equilibrium</td></tr>
-              <tr><td><strong>SKU-102</strong></td><td>Polyurethane Amino Resin #5</td><td>22 units</td><td>₹1,890</td><td><strong>₹2,041</strong></td><td><span class="trend-badge positive">+8.0%</span></td><td>Low stock alert: High demand elasticity.</td></tr>
-            </tbody>
-          </table>
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">SKU Pricing & Margin Recommendations</h4>
+              <p class="card-subtitle">AI suggested price adjustments based on stock levels, demand velocity, and margin constraints</p>
+            </div>
+            <div class="filter-controls">
+              <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">Model: Price Elasticity Ensemble</span>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>SKU ID</th>
+                  <th>Product Name</th>
+                  <th>Current Stock</th>
+                  <th>Current Price</th>
+                  <th>AI Suggested Price</th>
+                  <th>Price Change</th>
+                  <th>Pred. Demand</th>
+                  <th>Expected Revenue</th>
+                  <th>Profit Margin</th>
+                  <th>Recommendation Reason</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="dynamic-pricing-table-body">
+                <!-- Dynamically populated from script.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Interactive Price and Demand Analysis Chart -->
+        <div class="card chart-card modern-animated-card" style="margin-top: 4px;">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Price & Demand Sensitivity Analysis</h4>
+              <p class="card-subtitle">Historical sales volume versus predicted demand across price elasticity curves</p>
+            </div>
+            <div class="filter-controls">
+              <select id="dp-chart-sku-select" onchange="updateDynamicPricingChart()" class="cal-select" style="padding: 6px 10px;">
+                <option value="PROD-01">PROD-01 • Titanium Cool-Coat</option>
+                <option value="PROD-02">PROD-02 • Polyurethane Amino Resin</option>
+                <option value="PROD-03">PROD-03 • Viscometer Sensors</option>
+                <option value="PROD-04">PROD-04 • Ceramic Paint</option>
+              </select>
+            </div>
+          </div>
+          <div class="canvas-box-large modern-animated-chart-wrapper">
+            <canvas id="dynamicPricingChart"></canvas>
+          </div>
+        </div>
+      </section>
+     <!-- ================= SECTION 3: SMART INVENTORY & STOCK REPLENISHMENT ================= -->
+      <section id="section-smart-inventory" class="page-section">
+        <div class="section-title-wrap">
+          <div class="title-with-btn">
+            <div>
+              <h2>Smart Inventory & Stock Replenishment</h2>
+              <p>AI-driven reorder triggers, automated safety stock calculation, and purchase order management.</p>
+            </div>
+            <button class="primary-btn" onclick="openCreatePurchaseOrderModal()">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i> Create Purchase Order
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. Inventory KPI Cards (4 Cards) -->
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card">
+            <div class="stat-icon"><i data-lucide="boxes"></i></div>
+            <p class="stat-title">Total Products</p>
+            <h3 class="stat-val" id="inv-kpi-total-products">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Active Catalog SKUs</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #EF4444;"><i data-lucide="alert-triangle"></i></div>
+            <p class="stat-title">Low Stock Items</p>
+            <h3 class="stat-val" id="inv-kpi-low-stock">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Critical or reorder soon</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #3B82F6;"><i data-lucide="trending-up"></i></div>
+            <p class="stat-title">Predicted Demand (30d)</p>
+            <h3 class="stat-val" id="inv-kpi-predicted-demand">0 units</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">AI demand forecast sum</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #10B981;"><i data-lucide="wallet"></i></div>
+            <p class="stat-title">Estimated Reorder Budget</p>
+            <h3 class="stat-val" id="inv-kpi-reorder-budget">₹0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Required procurement cost</p>
+          </div>
+        </div>
+
+        <!-- 2. Smart Stock Alerts & Filters -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title"><i data-lucide="bell-ring" class="w-4 h-4 text-accent"></i> Smart Stock Alerts & Anomaly Monitor</h4>
+              <p class="card-subtitle">Automated notifications for stockouts, overstock, and supplier lead times</p>
+            </div>
+            <div class="filter-controls">
+              <div class="pill-group" id="inventory-status-filter-group">
+                <button class="pill active" data-invfilter="all" onclick="setInventoryFilter('all', this)">All</button>
+                <button class="pill" data-invfilter="critical" onclick="setInventoryFilter('critical', this)">Critical</button>
+                <button class="pill" data-invfilter="reorder" onclick="setInventoryFilter('reorder', this)">Reorder Soon</button>
+                <button class="pill" data-invfilter="overstock" onclick="setInventoryFilter('overstock', this)">Overstock</button>
+                <button class="pill" data-invfilter="healthy" onclick="setInventoryFilter('healthy', this)">Healthy</button>
+              </div>
+            </div>
+          </div>
+          <div id="smart-inventory-alerts-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px;">
+            <!-- Dynamically populated alerts -->
+          </div>
+        </div>
+
+        <!-- 3. Upgraded Inventory Reorder Recommendations Table -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Inventory Reorder & Lead-Time Analysis Table</h4>
+              <p class="card-subtitle">Calculated using safety stock, supplier lead time, and predicted 30-day demand</p>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table" id="smart-inventory-table">
+              <thead>
+                <tr>
+                  <th>Product Name & SKU</th>
+                  <th>Current Stock</th>
+                  <th>Safety Stock</th>
+                  <th>Pred. Demand (30d)</th>
+                  <th>Rec. Reorder Qty</th>
+                  <th>Est. Reorder Date</th>
+                  <th>Reorder Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="smart-inventory-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Inventory Cost & Savings Analysis Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h4 class="card-title"><i data-lucide="pie-chart" class="w-4 h-4 text-accent"></i> Inventory Cost Analysis</h4>
+                <p class="card-subtitle">Valuation breakdown of inventory holding and procurement</p>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;" id="inventory-cost-breakdown">
+              <!-- Dynamically populated cost analysis -->
+            </div>
+          </div>
+
+          <div class="card" style="background: linear-gradient(135deg, rgba(59,130,246,0.05), rgba(16,185,129,0.05)); border: 1px solid rgba(59,130,246,0.2);">
+            <div class="card-header">
+              <div>
+                <h4 class="card-title"><i data-lucide="sparkles" class="w-4 h-4 text-accent"></i> AI Savings & Efficiency Impact</h4>
+                <p class="card-subtitle">Estimated cost savings and loss prevention through smart replenishment</p>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px;" id="inventory-savings-breakdown">
+              <!-- Dynamically populated savings analysis -->
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- 3. Smart Inventory -->
-      <section id="section-smart-inventory" class="page-section">
-        <div class="section-title-wrap">
-          <h2>Smart Inventory & Stock Replenishment</h2>
-          <p>Automated reorder triggers and stock level alerts linked to Stock & Orders.</p>
-        </div>
-        <div class="card">
-          <div class="card-header">
-            <div><h4 class="card-title">Inventory Reorder Recommendations</h4></div>
+      <!-- Purchase Order Modal -->
+      <div class="modal-overlay hidden" id="purchase-order-modal">
+        <div class="modal-card" style="width: 520px; max-width: 95vw;">
+          <div class="modal-header">
+            <h3>Create Purchase Order (PO)</h3>
+            <button class="modal-close-btn" onclick="closePurchaseOrderModal()"><i data-lucide="x"></i></button>
           </div>
-          <table class="data-table">
-            <thead>
-              <tr><th>Product Name</th><th>Current Stock</th><th>Safety Buffer</th><th>Reorder Status</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Dynamic Viscometer Sensors</td><td>12 units</td><td>30 units</td><td><span class="table-badge cancelled">Immediate Reorder</span></td><td><button class="small-btn" onclick="navigateToSection('analytics')">View Stock & Orders</button></td></tr>
-              <tr><td>Polyurethane Amino Resin #5</td><td>22 units</td><td>50 units</td><td><span class="table-badge pending">Required Soon</span></td><td><button class="small-btn" onclick="navigateToSection('analytics')">View Stock & Orders</button></td></tr>
-            </tbody>
-          </table>
+          <form id="purchase-order-form" class="modal-body" onsubmit="handlePurchaseOrderSubmit(event)">
+            <div class="form-group">
+              <label for="po-product-select">Select Product SKU</label>
+              <select id="po-product-select" onchange="updatePoModalCalculations()" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="po-supplier">Supplier / Vendor Name</label>
+                <input type="text" id="po-supplier" value="Apex Industrial Corp" required />
+              </div>
+              <div class="form-group">
+                <label for="po-qty">Order Quantity (Units)</label>
+                <input type="number" id="po-qty" min="1" value="150" oninput="updatePoModalCalculations()" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="po-unit-cost">Estimated Unit Cost (₹)</label>
+                <input type="number" id="po-unit-cost" step="0.5" value="1250" oninput="updatePoModalCalculations()" required />
+              </div>
+              <div class="form-group">
+                <label for="po-expected-date">Expected Delivery Date</label>
+                <input type="date" id="po-expected-date" required />
+              </div>
+            </div>
+            <div style="background: var(--bg-main); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12.5px; font-weight: 600; color: var(--text-primary);">Total Procurement Cost:</span>
+              <strong id="po-total-cost-display" style="font-size: 16px; color: var(--accent-color);">₹1,87,500</strong>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="small-btn" onclick="closePurchaseOrderModal()">Cancel</button>
+              <button type="submit" class="primary-btn">
+                <i data-lucide="send" class="w-4 h-4"></i> Submit Purchase Order
+              </button>
+            </div>
+          </form>
         </div>
-      </section>
+      </div>
 
       <!-- 4. Market Intelligence -->
       <section id="section-market-intelligence" class="page-section">
@@ -1660,25 +1879,133 @@
         </div>
       </section>
 
-      <!-- 6. Alerts & Notifications -->
+      <!-- 6. Alerts & Notifications (Upgraded Retail Risk Monitoring Center) -->
       <section id="section-alerts-notifications" class="page-section">
         <div class="section-title-wrap">
-          <h2>Retail Alerts & Stock-Risk Notifications</h2>
-          <p>Real-time anomaly detection, low stock warnings, and price volatility alerts.</p>
+          <div class="title-with-btn">
+            <div>
+              <h2>Retail Risk Monitoring & Alert Center</h2>
+              <p>Real-time AI anomaly detection, low stock warnings, price volatility, and demand spike alerts.</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <button class="small-btn" onclick="exportAlertsCSV()"><i data-lucide="download" class="w-4 h-4"></i> Export CSV</button>
+              <button class="primary-btn" onclick="generateSmartRetailAlerts(); showToast('Alerts refreshed successfully!');">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh Alerts
+              </button>
+            </div>
+          </div>
         </div>
+
+        <!-- 1. Four KPI Summary Cards -->
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card interactive-card" onclick="filterAlertsByKpi('critical')" style="cursor: pointer;">
+            <div class="stat-icon" style="color: #EF4444;"><i data-lucide="shield-alert"></i></div>
+            <p class="stat-title">Critical Alerts</p>
+            <h3 class="stat-val" id="alert-kpi-critical">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Immediate attention required</p>
+          </div>
+          <div class="card stat-card interactive-card" onclick="filterAlertsByKpi('stock')" style="cursor: pointer;">
+            <div class="stat-icon" style="color: #F59E0B;"><i data-lucide="boxes"></i></div>
+            <p class="stat-title">Low Stock Items</p>
+            <h3 class="stat-val" id="alert-kpi-lowstock">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Stockout or reorder threshold</p>
+          </div>
+          <div class="card stat-card interactive-card" onclick="filterAlertsByKpi('demand')" style="cursor: pointer;">
+            <div class="stat-icon" style="color: #3B82F6;"><i data-lucide="trending-up"></i></div>
+            <p class="stat-title">Demand Spikes</p>
+            <h3 class="stat-val" id="alert-kpi-demand">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Festival / seasonal surge</p>
+          </div>
+          <div class="card stat-card interactive-card" onclick="filterAlertsByKpi('price')" style="cursor: pointer;">
+            <div class="stat-icon" style="color: #7C3AED;"><i data-lucide="tag"></i></div>
+            <p class="stat-title">Price Warnings</p>
+            <h3 class="stat-val" id="alert-kpi-price">0</h3>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Margin protection flags</p>
+          </div>
+        </div>
+
+        <!-- 2. Filters & Search Toolbar -->
+        <div class="card" style="padding: 16px 24px;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 10px; background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 10px; padding: 6px 12px; flex: 1; min-width: 240px;">
+              <i data-lucide="search" class="w-4 h-4 text-muted"></i>
+              <input type="text" id="alert-search-input" placeholder="Search by product name or SKU..." oninput="renderRetailAlertsTable()" style="border: none; background: transparent; outline: none; font-size: 12.5px; color: var(--text-primary); width: 100%; font-family: inherit;" />
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+              <select id="alert-category-filter" onchange="renderRetailAlertsTable()" class="cal-select" style="padding: 8px 12px;">
+                <option value="all">All Categories</option>
+                <option value="Stock Risk">Stock Risk</option>
+                <option value="Demand Risk">Demand Risk</option>
+                <option value="Price Risk">Price Risk</option>
+                <option value="Operational">Operational</option>
+              </select>
+
+              <select id="alert-status-filter" onchange="renderRetailAlertsTable()" class="cal-select" style="padding: 8px 12px;">
+                <option value="all">All Statuses</option>
+                <option value="Active">Active</option>
+                <option value="Acknowledged">Acknowledged</option>
+                <option value="Resolved">Resolved</option>
+                <option value="Dismissed">Dismissed</option>
+              </select>
+
+              <select id="alert-sort-select" onchange="renderRetailAlertsTable()" class="cal-select" style="padding: 8px 12px;">
+                <option value="newest">Sort: Newest</option>
+                <option value="oldest">Sort: Oldest</option>
+                <option value="severity">Sort: Severity (Critical First)</option>
+              </select>
+
+              <button class="small-btn" onclick="resetAlertFilters()">Clear Filters</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Active Risk Log Table -->
         <div class="card">
-          <div class="card-header"><div><h4 class="card-title">Active Risk Log</h4></div></div>
-          <table class="data-table">
-            <thead>
-              <tr><th>Timestamp</th><th>Category</th><th>Description</th><th>Severity</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Today &bull; 10:45 AM</td><td>Stock Risk</td><td>SKU-103 (Dynamic Viscometer Sensors) stock critically low (12 units).</td><td><span class="table-badge cancelled">Critical</span></td></tr>
-              <tr><td>Sep 24 &bull; 02:15 PM</td><td>Price Volatility</td><td>Competitor price drop detected for Polyurethane Emulsion series.</td><td><span class="table-badge pending">Warning</span></td></tr>
-            </tbody>
-          </table>
+          <div class="card-header">
+            <div>
+              <h4 class="card-title">Active Risk & Notification Log (<span id="alert-match-count">0</span> matching)</h4>
+              <p class="card-subtitle">Real-time risk monitoring table linked with Smart Inventory and Demand Forecasting</p>
+            </div>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Product / SKU</th>
+                  <th>Category</th>
+                  <th>Description / Reason</th>
+                  <th>Severity</th>
+                  <th>Recommended Action</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="retail-alerts-table-body">
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
+
+      <!-- Alert Details Modal -->
+      <div class="modal-overlay hidden" id="alert-details-modal">
+        <div class="modal-card" style="width: 580px; max-width: 95vw;">
+          <div class="modal-header">
+            <h3 id="modal-alert-title">Alert Details & Recommendation</h3>
+            <button class="modal-close-btn" onclick="closeAlertDetailsModal()"><i data-lucide="x"></i></button>
+          </div>
+          <div class="modal-body" id="modal-alert-body-content" style="gap: 16px;">
+            <!-- Populated dynamically -->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="small-btn" onclick="closeAlertDetailsModal()">Close</button>
+            <button type="button" class="primary-btn" id="modal-alert-action-btn">Take Action</button>
+          </div>
+        </div>
+      </div>
 
       <!-- 7. Reports & Analytics -->
       <section id="section-reports-analytics" class="page-section">

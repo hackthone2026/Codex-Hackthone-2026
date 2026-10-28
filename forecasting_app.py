@@ -118,3 +118,4 @@ def compute_dynamic_pricing(payload: PricingRequest):
 if __name__ == "__main__":
     import uvicorn
 
+    uvicorn.run("forecasting_app:app", host="0.0.0.0", port=8000)
