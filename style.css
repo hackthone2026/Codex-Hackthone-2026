@@ -3828,12 +3828,12 @@ body.auth-mode .content-container {
 }
 /* ================= WINDOWS-STYLE FORECAST RESULTS MODAL ================= */
 .forecast-modal-card {
-  width: 780px;
+  width: 820px;
   max-width: 95vw;
   max-height: 90vh;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
@@ -3888,7 +3888,7 @@ body.auth-mode .content-container {
   max-height: calc(90vh - 135px);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .forecast-modal-footer {
@@ -3914,7 +3914,7 @@ body.auth-mode .content-container {
 }
 
 .forecast-result-card {
-  background: var(--bg-main);
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 10px;
   padding: 12px;
@@ -3930,7 +3930,17 @@ body.auth-mode .content-container {
 }
 
 .forecast-result-card .res-val {
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-primary);
 }
+
+.dot-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.dot-red { background-color: #EF4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.8); }
+.dot-green { background-color: #10B981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.8); }
+.dot-yellow { background-color: #F59E0B; box-shadow: 0 0 6px rgba(245, 158, 11, 0.8); }

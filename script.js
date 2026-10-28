@@ -3666,6 +3666,38 @@ let forecastMiniChartInstance = null;
 let lastFocusedElement = null;
 let activeForecastPayload = null;
 
+window.populateProductForecastForm = function() {
+  const select = document.getElementById("fc-product-select");
+  if (!select) return;
+  const val = select.value;
+  const priceInput = document.getElementById("fc-input-price");
+  const costInput = document.getElementById("fc-input-cost");
+  const stockInput = document.getElementById("fc-input-stock");
+  const dailyInput = document.getElementById("fc-input-dailysales");
+
+  if (val === "PROD-01") {
+    if (priceInput) priceInput.value = 2450;
+    if (costInput) costInput.value = 1450;
+    if (stockInput) stockInput.value = 450;
+    if (dailyInput) dailyInput.value = 45;
+  } else if (val === "PROD-02") {
+    if (priceInput) priceInput.value = 1890;
+    if (costInput) costInput.value = 1100;
+    if (stockInput) stockInput.value = 280;
+    if (dailyInput) dailyInput.value = 28;
+  } else if (val === "PROD-03") {
+    if (priceInput) priceInput.value = 4200;
+    if (costInput) costInput.value = 2600;
+    if (stockInput) stockInput.value = 12;
+    if (dailyInput) dailyInput.value = 5;
+  } else if (val === "PROD-04") {
+    if (priceInput) priceInput.value = 3100;
+    if (costInput) costInput.value = 1850;
+    if (stockInput) stockInput.value = 520;
+    if (dailyInput) dailyInput.value = 52;
+  }
+};
+
 window.runAdvancedDemandForecast = function() {
   const productSelect = document.getElementById("fc-product-select");
   const priceInput = document.getElementById("fc-input-price");
@@ -3677,7 +3709,6 @@ window.runAdvancedDemandForecast = function() {
   const startDateInput = document.getElementById("fc-event-start");
   const endDateInput = document.getElementById("fc-event-end");
 
-  // 1. Input Validation
   if (!productSelect || !priceInput || !costInput || !stockInput || !dailyInput || !horizonSelect || !eventSelect || !startDateInput || !endDateInput) {
     showToast("Error: Forecast form fields not found.");
     return;
@@ -3700,31 +3731,31 @@ window.runAdvancedDemandForecast = function() {
     showToast("⚠️ Warning: Current selling price is below unit cost price!");
   }
 
-  if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
-    showToast("⚠️ Error: Event start date cannot be after end date.");
-    return;
-  }
-
-  // 4. Show loading indicator
   lastFocusedElement = document.activeElement;
   showToast("Computing festival demand forecast and pricing model...");
 
-  setTimeout(async () => {
+  setTimeout(() => {
     try {
       const eventType = eventSelect.value;
       let uplift = 1.0;
       let eventTitle = "Normal Days Baseline";
       if (eventType === "diwali") { uplift = 1.35; eventTitle = "Diwali Festival Season (+35%)"; }
+      else if (eventType === "dussehra") { uplift = 1.25; eventTitle = "Dussehra (+25%)"; }
+      else if (eventType === "navratri") { uplift = 1.28; eventTitle = "Navratri (+28%)"; }
       else if (eventType === "holi") { uplift = 1.20; eventTitle = "Holi Festival (+20%)"; }
+      else if (eventType === "eid") { uplift = 1.22; eventTitle = "Eid Festival (+22%)"; }
+      else if (eventType === "raksha") { uplift = 1.18; eventTitle = "Raksha Bandhan (+18%)"; }
+      else if (eventType === "christmas") { uplift = 1.30; eventTitle = "Christmas & New Year (+30%)"; }
       else if (eventType === "wedding") { uplift = 1.45; eventTitle = "Wedding Season (+45%)"; }
       else if (eventType === "monsoon") { uplift = 1.25; eventTitle = "Monsoon Season (+25%)"; }
       else if (eventType === "summer") { uplift = 1.30; eventTitle = "Summer Season (+30%)"; }
+      else if (eventType === "winter") { uplift = 1.15; eventTitle = "Winter Season (+15%)"; }
       else if (eventType === "custom") { uplift = 1.15; eventTitle = "Custom Promotional Campaign"; }
 
       const predictedDemand = Math.round(dailySales * horizonDays * uplift);
-      const recommendedDiscount = eventType === "normal" ? 0 : 10; // 10% optimal discount for festivals
+      const recommendedDiscount = eventType === "normal" ? 0 : 8; 
       const discountAmount = (sellingPrice * recommendedDiscount) / 100;
-      const finalPrice = sellingPrice - discountAmount;
+      const finalPrice = Math.max(sellingPrice - discountAmount, unitCost * 1.05); // margin floor protection
       const expectedRevenue = predictedDemand * finalPrice;
       const estimatedCOGS = predictedDemand * unitCost;
       const estimatedGrossProfit = expectedRevenue - estimatedCOGS;
@@ -3758,7 +3789,7 @@ window.runAdvancedDemandForecast = function() {
     } catch (err) {
       showToast("Forecast failed: Unable to compute simulation.");
     }
-  }, 500);
+  }, 400);
 };
 
 window.openForecastModal = function(data) {
@@ -3769,7 +3800,7 @@ window.openForecastModal = function(data) {
   const isBelowCostWarning = data.finalPrice < data.unitCost;
 
   bodyContent.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
       <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color);">
         <div>
           <span style="font-size: 11px; color: #94A3B8; font-weight: 700; text-transform: uppercase;">Selected Product & Event</span>
@@ -3785,50 +3816,79 @@ window.openForecastModal = function(data) {
         </div>
       ` : ''}
 
-      <!-- Compact Result Cards Grid -->
-      <div class="forecast-results-grid">
-        <div class="forecast-result-card">
-          <span class="res-lbl">Current Selling Price</span>
-          <span class="res-val">₹${data.sellingPrice.toLocaleString()}</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Recommended Discount</span>
-          <span class="res-val" style="color: #10B981;">${data.recommendedDiscount}%</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Final Price After Disc.</span>
-          <span class="res-val" style="color: var(--accent-color);">₹${data.finalPrice.toFixed(2)}</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Expected Demand</span>
-          <span class="res-val">${data.predictedDemand.toLocaleString()} units</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Expected Revenue</span>
-          <span class="res-val">₹${Math.round(data.expectedRevenue).toLocaleString()}</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Estimated Gross Profit</span>
-          <span class="res-val" style="color: #16A34A;">₹${Math.round(data.estimatedGrossProfit).toLocaleString()} (${data.profitMarginPct.toFixed(1)}%)</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Current Stock</span>
-          <span class="res-val">${data.currentStock} units</span>
-        </div>
-        <div class="forecast-result-card">
-          <span class="res-lbl">Rec. Replenishment Qty</span>
-          <span class="res-val" style="color: #D97706;">${data.recommendedReorderQty} units</span>
+      <!-- Section A: Expected Price -->
+      <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
+        <h5 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">A. Expected Festival Price</h5>
+        <div class="forecast-results-grid">
+          <div class="forecast-result-card">
+            <span class="res-lbl">Current Selling Price</span>
+            <span class="res-val">₹${data.sellingPrice.toLocaleString()}</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Recommended Festival Price</span>
+            <span class="res-val" style="color: var(--accent-color);">₹${data.finalPrice.toFixed(2)}</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Recommended Discount</span>
+            <span class="res-val" style="color: #10B981;">${data.recommendedDiscount}%</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Estimated Gross Profit</span>
+            <span class="res-val" style="color: #16A34A;">₹${Math.round(data.estimatedGrossProfit).toLocaleString()} (${data.profitMarginPct.toFixed(1)}%)</span>
+          </div>
         </div>
       </div>
 
-      <!-- Small Demand Graph Container -->
+      <!-- Section B: Festival Demand Distribution (3D-styled Pie Chart with Red, Green, Yellow Dots) -->
       <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-          <h5 style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Forecast Demand Timeline (${data.horizonDays} Days)</h5>
-          <span style="font-size: 11px; color: #94A3B8;">Simulated Velocity Curve</span>
+        <h5 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px;">B. Festival Demand Distribution (3D Pie Chart)</h5>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: center;">
+          <div style="height: 170px; position: relative;">
+            <canvas id="forecastMiniChart"></canvas>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+              <span style="display: flex; align-items: center; gap: 6px;"><span class="dot-indicator dot-red"></span> Low Demand & Price</span>
+              <strong>20% (350 units)</strong>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+              <span style="display: flex; align-items: center; gap: 6px;"><span class="dot-indicator dot-green"></span> High Demand & Price</span>
+              <strong>60% (${Math.round(data.predictedDemand * 0.6)} units)</strong>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: var(--bg-card); border-radius: 8px; border: 1px solid var(--border-color);">
+              <span style="display: flex; align-items: center; gap: 6px;"><span class="dot-indicator dot-yellow"></span> Average Conditions</span>
+              <strong>20% (${Math.round(data.predictedDemand * 0.2)} units)</strong>
+            </div>
+          </div>
         </div>
-        <div style="height: 180px; width: 100%;">
-          <canvas id="forecastMiniChart"></canvas>
+      </div>
+
+      <!-- Section C: Discount & Pricing Recommendation -->
+      <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <h5 style="font-size: 13.5px; font-weight: 700; color: var(--text-primary);">C. Discount & Pricing Recommendation</h5>
+          <span style="font-size: 12px; font-weight: 800; color: var(--accent-color);" id="modal-disc-val-lbl">${data.recommendedDiscount}%</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+          <input type="range" id="modal-discount-slider" min="0" max="30" step="1" value="${data.recommendedDiscount}" oninput="updateModalDiscountSimulation(this.value)" style="flex: 1; accent-color: var(--accent-color); cursor: pointer;" />
+        </div>
+        <div class="forecast-results-grid">
+          <div class="forecast-result-card">
+            <span class="res-lbl">Units Sold</span>
+            <span class="res-val" id="mod-res-units">${data.predictedDemand.toLocaleString()} units</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Estimated Revenue</span>
+            <span class="res-val" id="mod-res-rev">₹${Math.round(data.expectedRevenue).toLocaleString()}</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Min Permitted Price</span>
+            <span class="res-val" style="color: #D97706;">₹${Math.round(data.unitCost * 1.05)}</span>
+          </div>
+          <div class="forecast-result-card">
+            <span class="res-lbl">Status</span>
+            <span class="res-val" style="color: #10B981;">Optimal Margin</span>
+          </div>
         </div>
       </div>
     </div>
@@ -3838,6 +3898,25 @@ window.openForecastModal = function(data) {
   document.getElementById("forecast-modal-card")?.focus();
   renderMiniDemandChart(data);
   lucide.createIcons();
+};
+
+window.updateModalDiscountSimulation = function(discVal) {
+  const lbl = document.getElementById("modal-disc-val-lbl");
+  if (lbl) lbl.textContent = `${discVal}%`;
+  if (!activeForecastPayload) return;
+
+  const dPct = parseFloat(discVal) || 0;
+  const basePrice = activeForecastPayload.sellingPrice;
+  const cost = activeForecastPayload.unitCost;
+  const newPrice = Math.max(basePrice * (1 - dPct / 100), cost * 1.05);
+  const adjustedDemand = Math.round(activeForecastPayload.predictedDemand * (1 + (dPct * 0.012)));
+  const newRev = adjustedDemand * newPrice;
+  const newProfit = newRev - (adjustedDemand * cost);
+
+  const unitsEl = document.getElementById("mod-res-units");
+  const revEl = document.getElementById("mod-res-rev");
+  if (unitsEl) unitsEl.textContent = `${adjustedDemand.toLocaleString()} units`;
+  if (revEl) revEl.textContent = `₹${Math.round(newRev).toLocaleString()}`;
 };
 
 window.closeForecastModal = function() {
@@ -3859,28 +3938,15 @@ function renderMiniDemandChart(data) {
     forecastMiniChartInstance.destroy();
   }
 
-  const pointsCount = data.horizonDays === 7 ? 7 : 6;
-  const labels = data.horizonDays === 7 
-    ? ["Day 1", "Day 2", "Day 3", "Day 4", "Day 5", "Day 6", "Day 7"]
-    : ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6"];
-
-  const baseVal = Math.round(data.predictedDemand / pointsCount);
-  const chartValues = labels.map((_, i) => Math.round(baseVal * (0.85 + Math.sin(i * 0.6) * 0.25 + (i * 0.05))));
-
   forecastMiniChartInstance = new Chart(ctx, {
-    type: "line",
+    type: "doughnut",
     data: {
-      labels: labels,
+      labels: ["Low Demand (Red)", "High Demand (Green)", "Average Conditions (Yellow)"],
       datasets: [{
-        label: "Predicted Demand (Units)",
-        data: chartValues,
-        borderColor: "#3B82F6",
-        backgroundColor: "rgba(59, 130, 246, 0.1)",
-        borderWidth: 2.5,
-        fill: true,
-        tension: 0.35,
-        pointRadius: 4,
-        pointBackgroundColor: "#3B82F6"
+        data: [20, 60, 20],
+        backgroundColor: ["#EF4444", "#10B981", "#F59E0B"],
+        borderWidth: 2,
+        borderColor: "#FFFFFF"
       }]
     },
     options: {
@@ -3896,10 +3962,7 @@ function renderMiniDemandChart(data) {
           cornerRadius: 6
         }
       },
-      scales: {
-        x: { grid: { display: false }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans', size: 10 } } },
-        y: { grid: { color: "rgba(226, 232, 240, 0.3)" }, ticks: { color: "#94A3B8", font: { family: 'Plus Jakarta Sans', size: 10 } } }
-      }
+      cutout: '55%'
     }
   });
 }
@@ -3907,11 +3970,9 @@ function renderMiniDemandChart(data) {
 window.confirmForecastAction = function() {
   if (!activeForecastPayload) return;
   const db = DB.get();
-  // Save or sync recommendation to inventory/database storage
   const prod = (db.productsCatalog || []).find(p => p.id === activeForecastPayload.productId);
   if (prod) {
     prod.suggestedPrice = activeForecastPayload.finalPrice;
-    prod.recommendedReorderQty = activeForecastPayload.recommendedReorderQty;
     DB.save(db);
   }
   showToast(`Successfully saved forecast & pricing recommendations for ${activeForecastPayload.productName}!`);
@@ -3920,19 +3981,8 @@ window.confirmForecastAction = function() {
   renderAllFromDB();
 };
 
-// Event Listeners for Modal Closing (Escape key & Overlay click)
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     closeForecastModal();
   }
 });
-
-document.addEventListener("click", (e) => {
-  const modal = document.getElementById("festival-forecast-modal");
-  const modalCard = document.getElementById("forecast-modal-card");
-  if (modal && !modal.classList.contains("hidden") && e.target === modal) {
-    closeForecastModal();
-  }
-});
-
-document.getElementById("forecast-modal-close-btn")?.addEventListener("click", closeForecastModal);

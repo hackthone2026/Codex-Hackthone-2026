@@ -1379,7 +1379,7 @@
 
       <!-- ================= RETAIL INTELLIGENCE SUBMENU SECTIONS ================= -->
       
-      <!-- ================= SECTION: DEMAND FORECASTING & RETAIL INTELLIGENCE ================= -->
+     <!-- ================= SECTION: DEMAND FORECASTING & RETAIL INTELLIGENCE ================= -->
       <section id="section-demand-forecasting" class="page-section">
         <div class="section-title-wrap">
           <div class="title-with-btn">
@@ -1390,7 +1390,7 @@
             <div style="display: flex; gap: 10px;">
               <button class="small-btn" onclick="exportForecastReport()"><i data-lucide="download" class="w-4 h-4"></i> Export Report</button>
               <button class="primary-btn" onclick="runAdvancedDemandForecast()">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Run Forecast Model
+                <i data-lucide="cpu" class="w-4 h-4"></i> Run New Forecasting Model
               </button>
             </div>
           </div>
@@ -1435,111 +1435,108 @@
           </div>
         </div>
 
-        <!-- B. Product Selection & C. Festival Planner Form Grid -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-          
-          <!-- Product Selection Form -->
-          <div class="card">
-            <div class="card-header" style="margin-bottom: 14px;">
-              <div>
-                <h4 class="card-title"><i data-lucide="package" class="w-4 h-4 text-accent"></i> Product & SKU Selection</h4>
-                <p class="card-subtitle">Select saved product or configure custom parameters</p>
-              </div>
-            </div>
-            <div class="modal-body" style="gap: 12px;">
-              <div class="form-group">
-                <label>Select Saved Product SKU</label>
-                <select id="fc-product-select" onchange="populateProductForecastForm()" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-family: inherit;">
-                  <option value="PROD-01">PROD-01 &bull; Titanium Cool-Coat Emulsion (Stock: 450)</option>
-                  <option value="PROD-02">PROD-02 &bull; Polyurethane Amino Resin #5 (Stock: 280)</option>
-                  <option value="PROD-03">PROD-03 &bull; Dynamic Viscometer Sensors (Stock: 12)</option>
-                  <option value="PROD-04">PROD-04 &bull; Heat-Reflective Ceramic Paint (Stock: 520)</option>
-                </select>
-              </div>
-              <div class="form-row" style="margin-bottom: 0;">
-                <div class="form-group">
-                  <label>Current Selling Price (₹)</label>
-                  <input type="number" id="fc-input-price" value="2450" required />
-                </div>
-                <div class="form-group">
-                  <label>Unit Cost Price (₹)</label>
-                  <input type="number" id="fc-input-cost" value="1450" required />
-                </div>
-              </div>
-              <div class="form-row" style="margin-bottom: 0;">
-                <div class="form-group">
-                  <label>Current Inventory Quantity</label>
-                  <input type="number" id="fc-input-stock" value="450" required />
-                </div>
-                <div class="form-group">
-                  <label>Average Daily Sales</label>
-                  <input type="number" id="fc-input-dailysales" value="45" required />
-                </div>
-              </div>
-              <div class="form-row" style="margin-bottom: 0;">
-                <div class="form-group">
-                  <label>Forecast Horizon</label>
-                  <select id="fc-input-horizon" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-family: inherit;">
-                    <option value="7">7 Days (Short-term)</option>
-                    <option value="30" selected>30 Days (Monthly)</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Min Safety Stock Level</label>
-                  <input type="number" id="fc-input-safetystock" value="100" />
-                </div>
-              </div>
+        <!-- Festival & Season Planner (Repositioned to Center/Middle as Primary Panel) -->
+        <div class="card" style="max-width: 820px; margin: 0 auto; width: 100%;">
+          <div class="card-header" style="margin-bottom: 14px;">
+            <div>
+              <h4 class="card-title"><i data-lucide="calendar" class="w-4 h-4 text-accent"></i> Festival & Season Planner</h4>
+              <p class="card-subtitle">Select product SKU, seasonal occasion, date range, and demand drivers</p>
             </div>
           </div>
-
-          <!-- Festival & Season Planner -->
-          <div class="card">
-            <div class="card-header" style="margin-bottom: 14px;">
-              <div>
-                <h4 class="card-title"><i data-lucide="calendar" class="w-4 h-4 text-accent"></i> Festival & Season Planner</h4>
-                <p class="card-subtitle">Select seasonal occasion and demand drivers</p>
+          <div class="modal-body" style="gap: 14px;">
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label>Select Product SKU</label>
+                <select id="fc-product-select" onchange="populateProductForecastForm()" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-family: inherit;">
+                  <option value="PROD-01">PROD-01 • Titanium Cool-Coat Emulsion (Stock: 450)</option>
+                  <option value="PROD-02">PROD-02 • Polyurethane Amino Resin #5 (Stock: 280)</option>
+                  <option value="PROD-03">PROD-03 • Dynamic Viscometer Sensors (Stock: 12)</option>
+                  <option value="PROD-04">PROD-04 • Heat-Reflective Ceramic Paint (Stock: 520)</option>
+                </select>
               </div>
-            </div>
-            <div class="modal-body" style="gap: 12px;">
               <div class="form-group">
                 <label>Select Occasion / Festival</label>
                 <select id="fc-event-select" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-family: inherit;">
                   <option value="diwali" selected>Diwali Festival Season (+35% Demand Uplift)</option>
+                  <option value="dussehra">Dussehra (+25% Demand Uplift)</option>
+                  <option value="navratri">Navratri (+28% Demand Uplift)</option>
                   <option value="holi">Holi Festival (+20% Demand Uplift)</option>
+                  <option value="eid">Eid Festival (+22% Demand Uplift)</option>
+                  <option value="raksha">Raksha Bandhan (+18% Demand Uplift)</option>
+                  <option value="christmas">Christmas & New Year (+30% Demand Uplift)</option>
                   <option value="wedding">Wedding Season (+45% Demand Uplift)</option>
                   <option value="monsoon">Monsoon Season (+25% Waterproofing Demand)</option>
                   <option value="summer">Summer Season (+30% Cool-Coat Demand)</option>
+                  <option value="winter">Winter Season (+15% Demand Uplift)</option>
                   <option value="normal">Normal Days (Baseline Demand)</option>
                   <option value="custom">Custom Promotional Campaign</option>
                 </select>
               </div>
-              <div class="form-row" style="margin-bottom: 0;">
-                <div class="form-group">
-                  <label>Event Start Date</label>
-                  <input type="date" id="fc-event-start" value="2026-10-25" />
-                </div>
-                <div class="form-group">
-                  <label>Event End Date</label>
-                  <input type="date" id="fc-event-end" value="2026-11-05" />
-                </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label>Current Selling Price (₹)</label>
+                <input type="number" id="fc-input-price" value="2450" required />
               </div>
               <div class="form-group">
-                <label>Active Demand Drivers (Checked = Applied)</label>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; font-size: 12px;">
-                  <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-history" checked /> Historical Sales Period</label>
-                  <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-festival" checked /> Festival Seasonality</label>
-                  <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-weather" checked /> Weather Impact (Heat/Monsoon)</label>
-                  <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-competitor" checked /> Competitor Price Signals</label>
-                </div>
-              </div>
-              <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
-                <button type="button" class="primary-btn" onclick="runAdvancedDemandForecast()">
-                  <i data-lucide="play" class="w-4 h-4"></i> Run Forecast Model Now
-                </button>
+                <label>Unit Cost Price (₹)</label>
+                <input type="number" id="fc-input-cost" value="1450" required />
               </div>
             </div>
-          </div>
 
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label>Current Inventory Quantity</label>
+                <input type="number" id="fc-input-stock" value="450" required />
+              </div>
+              <div class="form-group">
+                <label>Average Daily Sales</label>
+                <input type="number" id="fc-input-dailysales" value="45" required />
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label>Event Start Date</label>
+                <input type="date" id="fc-event-start" value="2026-10-25" />
+              </div>
+              <div class="form-group">
+                <label>Event End Date</label>
+                <input type="date" id="fc-event-end" value="2026-11-05" />
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label>Forecast Horizon</label>
+                <select id="fc-input-horizon" style="padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-family: inherit;">
+                  <option value="7">7 Days (Short-term)</option>
+                  <option value="30" selected>30 Days (Monthly)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Min Safety Stock Level</label>
+                <input type="number" id="fc-input-safetystock" value="100" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Active Demand Drivers (Checked = Applied)</label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; font-size: 12px;">
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-history" checked /> Historical Sales Period</label>
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-festival" checked /> Festival Seasonality</label>
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-weather" checked /> Weather Impact (Heat/Monsoon)</label>
+                <label style="display: flex; align-items: center; gap: 6px;"><input type="checkbox" id="drv-competitor" checked /> Competitor Price Signals</label>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+              <button type="button" class="primary-btn" onclick="runAdvancedDemandForecast()">
+                <i data-lucide="play" class="w-4 h-4"></i> Run New Forecasting Model
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- D. Interactive Forecast Comparison Chart -->
@@ -1557,126 +1554,32 @@
             <canvas id="retailForecastChart"></canvas>
           </div>
         </div>
-
-        <!-- E. Dynamic Pricing Advisor & Discount Simulator -->
-        <div class="card" style="margin-top: 4px;">
-          <div class="card-header">
-            <div>
-              <h4 class="card-title"><i data-lucide="tag" class="w-4 h-4 text-accent"></i> Dynamic Pricing Advisor & Discount Simulator</h4>
-              <p class="card-subtitle">Test promotional discounts and evaluate profit margin impact in real time</p>
-            </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 12px; font-weight: 700; color: var(--text-primary);">Business Objective:</span>
-              <select id="pricing-objective" style="padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); font-size: 12px; font-family: inherit;">
-                <option value="profit">Maximize Gross Profit</option>
-                <option value="volume">Increase Sales Volume</option>
-                <option value="clearance">Clear Excess Inventory</option>
-                <option value="margin">Maintain Target Margin (≥ 25%)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Discount Slider Control -->
-          <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Select Promotional Discount Percentage:</span>
-              <span id="discount-pct-label" style="font-size: 15px; font-weight: 800; color: var(--accent-color);">10%</span>
-            </div>
-            <div style="display: flex; align-items: center; gap: 16px;">
-              <input type="range" id="discount-slider" min="0" max="30" step="5" value="10" oninput="updatePricingSimulation()" style="flex: 1; accent-color: var(--accent-color); cursor: pointer;" />
-            </div>
-            <div style="display: flex; gap: 8px;">
-              <button type="button" class="small-btn" onclick="setDiscountPreset(0)">0% (No Disc)</button>
-              <button type="button" class="small-btn" onclick="setDiscountPreset(5)">5%</button>
-              <button type="button" class="small-btn" onclick="setDiscountPreset(10)">10%</button>
-              <button type="button" class="small-btn" onclick="setDiscountPreset(15)">15%</button>
-              <button type="button" class="small-btn" onclick="setDiscountPreset(20)">20%</button>
-              <button type="button" class="small-btn" onclick="setDiscountPreset(25)">25%</button>
-            </div>
-          </div>
-
-          <!-- Pricing Scenarios Comparison Table -->
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Pricing Scenario</th>
-                <th>Selling Price</th>
-                <th>Est. Units Sold</th>
-                <th>Est. Revenue</th>
-                <th>Est. COGS</th>
-                <th>Gross Profit</th>
-                <th>Profit Margin</th>
-                <th>Status / Recommendation</th>
-              </tr>
-            </thead>
-            <tbody id="pricing-simulation-tbody">
-              <tr>
-                <td><strong>Current Price (0% Disc)</strong></td>
-                <td>₹2,450</td>
-                <td>1,350 units</td>
-                <td>₹33,07,500</td>
-                <td>₹19,57,500</td>
-                <td><strong>₹13,50,000</strong></td>
-                <td>40.8%</td>
-                <td><span class="table-badge delivered">Baseline</span></td>
-              </tr>
-              <tr>
-                <td><strong>Recommended (Optimized)</strong></td>
-                <td><strong>₹2,205</strong></td>
-                <td>1,620 units</td>
-                <td>₹35,72,100</td>
-                <td>₹23,49,000</td>
-                <td><strong>₹12,23,100</strong></td>
-                <td>34.2%</td>
-                <td><span class="table-badge pending" id="rec-status-badge">AI Recommended</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- F. Smart Inventory Replenishment Integration -->
-        <div class="card" style="margin-top: 4px;">
-          <div class="card-header">
-            <div>
-              <h4 class="card-title"><i data-lucide="boxes" class="w-4 h-4 text-accent"></i> Smart Inventory & Replenishment Summary</h4>
-              <p class="card-subtitle">Projected stock levels and automated reorder purchase recommendations</p>
-            </div>
-          </div>
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Product SKU & Name</th>
-                <th>Current Stock</th>
-                <th>Projected Sales (30d)</th>
-                <th>Projected Ending Stock</th>
-                <th>Safety Buffer</th>
-                <th>Suggested Reorder Qty</th>
-                <th>Stockout Alert</th>
-              </tr>
-            </thead>
-            <tbody id="smart-inventory-forecast-tbody">
-              <tr>
-                <td><strong>PROD-01</strong><br>Titanium Cool-Coat Emulsion</td>
-                <td>450 units</td>
-                <td>1,350 units</td>
-                <td style="color: #EF4444; font-weight: 700;">-900 units</td>
-                <td>100 units</td>
-                <td><strong>1,000 units</strong></td>
-                <td><span class="table-badge cancelled">Critical Shortage</span></td>
-              </tr>
-              <tr>
-                <td><strong>PROD-02</strong><br>Polyurethane Amino Resin #5</td>
-                <td>280 units</td>
-                <td>650 units</td>
-                <td style="color: #D97706; font-weight: 700;">-370 units</td>
-                <td>80 units</td>
-                <td><strong>450 units</strong></td>
-                <td><span class="table-badge pending">Reorder Soon</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </section>
+
+  <!-- Festival Demand & Price Forecast Modal Popup -->
+  <div class="modal-overlay hidden" id="festival-forecast-modal" role="dialog" aria-modal="true" aria-labelledby="forecast-modal-title">
+    <div class="forecast-modal-card" id="forecast-modal-card" tabindex="-1">
+      <div class="forecast-modal-header">
+        <div class="forecast-modal-title-wrap">
+          <i data-lucide="brain" class="w-5 h-5 text-accent"></i>
+          <h3 id="forecast-modal-title">Festival Demand & Price Forecast</h3>
+        </div>
+        <button type="button" class="forecast-modal-close-btn" id="forecast-modal-close-btn" aria-label="Close modal" onclick="closeForecastModal()">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="forecast-modal-body" id="forecast-modal-body-content">
+        <!-- Dynamically populated sections A, B, C -->
+      </div>
+      <div class="forecast-modal-footer">
+        <button type="button" class="small-btn" onclick="closeForecastModal()">Close</button>
+        <button type="button" class="small-btn" onclick="runAdvancedDemandForecast()">Recalculate Forecast</button>
+        <button type="button" class="primary-btn" onclick="confirmForecastAction()">
+          <i data-lucide="save" class="w-4 h-4"></i> Save Forecast
+        </button>
+      </div>
+    </div>
+  </div>
 
       <!-- 2. Dynamic Pricing Advisor -->
       <section id="section-dynamic-pricing" class="page-section">
