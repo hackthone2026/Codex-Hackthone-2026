@@ -2007,30 +2007,191 @@
         </div>
       </div>
 
-      <!-- 7. Reports & Analytics -->
+      <!-- ================= SECTION 7: REPORTS & ANALYTICS ================= -->
       <section id="section-reports-analytics" class="page-section">
         <div class="section-title-wrap">
           <div class="title-with-btn">
             <div>
               <h2>Retail Reports & Analytics</h2>
-              <p>Exportable performance summaries and inventory valuation reports.</p>
+              <p>AI-powered sales, demand, pricing, and inventory insights.</p>
             </div>
-            <button class="small-btn" onclick="showToast('Preparing PDF report export...')">
-              <i data-lucide="printer" class="w-4 h-4"></i> Print A4 Report
-            </button>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button class="small-btn" onclick="refreshReportData()">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh Data
+              </button>
+              <button class="small-btn" onclick="printActiveReport()">
+                <i data-lucide="printer" class="w-4 h-4"></i> Print A4 Report
+              </button>
+              <button class="primary-btn" onclick="document.getElementById('report-type-select').focus()">
+                <i data-lucide="file-text" class="w-4 h-4"></i> Generate New Report
+              </button>
+            </div>
           </div>
         </div>
+
+        <!-- Summary KPI Cards -->
+        <div class="stat-cards-grid-4">
+          <div class="card stat-card">
+            <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+            <p class="stat-title">Predicted Demand</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="rep-kpi-demand">0 units</h3>
+              <span class="trend-badge positive">AI Forecast</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Selected Period Horizon</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #EF4444;"><i data-lucide="alert-triangle"></i></div>
+            <p class="stat-title">Low-Stock Products</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="rep-kpi-lowstock">0</h3>
+              <span class="trend-badge negative">Critical Risk</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Immediate reorder required</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #3B82F6;"><i data-lucide="tag"></i></div>
+            <p class="stat-title">Pricing Recommendations</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="rep-kpi-pricing">0 SKUs</h3>
+              <span class="trend-badge positive">Optimized</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Elasticity margin tuning</p>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-icon" style="color: #10B981;"><i data-lucide="indian-rupee"></i></div>
+            <p class="stat-title">Estimated Gross Profit</p>
+            <div class="stat-val-group">
+              <h3 class="stat-val" id="rep-kpi-profit">₹0</h3>
+              <span class="trend-badge positive">Net Margin</span>
+            </div>
+            <p style="font-size: 11.5px; color: var(--text-secondary); margin-top: 4px;">Revenue minus COGS</p>
+          </div>
+        </div>
+
+        <!-- Report Generation Control Panel -->
+        <div class="card" style="padding: 24px;">
+          <div class="card-header" style="margin-bottom: 16px;">
+            <div>
+              <h4 class="card-title"><i data-lucide="sliders" class="w-4 h-4 text-accent"></i> Report Generation Panel</h4>
+              <p class="card-subtitle">Select report type, time period, filters, and output format to generate insights.</p>
+            </div>
+          </div>
+          <div class="modal-body" style="gap: 16px;">
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label for="report-type-select">Report Type</label>
+                <select id="report-type-select" class="cal-select" style="padding: 10px 12px;">
+                  <option value="demand">1. AI Demand Forecast</option>
+                  <option value="pricing">2. Dynamic Pricing & Profit</option>
+                  <option value="inventory">3. Smart Inventory & Reorder</option>
+                  <option value="sales">4. Sales & Revenue Performance</option>
+                  <option value="festival">5. Festival & Season Impact</option>
+                  <option value="weather">6. Weather Impact</option>
+                  <option value="risk">7. Stockout & Overstock Risk</option>
+                  <option value="comprehensive" selected>8. Comprehensive Business Performance</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="report-period-select">Reporting Period</label>
+                <select id="report-period-select" class="cal-select" style="padding: 10px 12px;">
+                  <option value="7">Last 7 days</option>
+                  <option value="15">Last 15 days</option>
+                  <option value="30" selected>Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group">
+                <label for="report-product-filter">Product Filter</label>
+                <select id="report-product-filter" class="cal-select" style="padding: 10px 12px;">
+                  <option value="all">All Products & SKUs</option>
+                  <option value="PROD-01">PROD-01 • Titanium Cool-Coat Emulsion</option>
+                  <option value="PROD-02">PROD-02 • Polyurethane Amino Resin #5</option>
+                  <option value="PROD-03">PROD-03 • Dynamic Viscometer Sensors</option>
+                  <option value="PROD-04">PROD-04 • Heat-Reflective Ceramic Paint</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="report-category-filter">Category Filter</label>
+                <select id="report-category-filter" class="cal-select" style="padding: 10px 12px;">
+                  <option value="all">All Categories</option>
+                  <option value="Coatings">Industrial Coatings</option>
+                  <option value="Resins">Polymers & Resins</option>
+                  <option value="Sensors">Hardware Sensors</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; border-top: 1px solid var(--border-color); padding-top: 16px;">
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="primary-btn" onclick="generateAndRenderReport()">
+                  <i data-lucide="play" class="w-4 h-4"></i> Generate Report
+                </button>
+                <button type="button" class="small-btn" onclick="resetReportFilters()">
+                  <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Filters
+                </button>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button type="button" class="small-btn" onclick="exportActiveReportCSV()">
+                  <i data-lucide="sheet" class="w-4 h-4"></i> Export CSV
+                </button>
+                <button type="button" class="small-btn" onclick="printActiveReport()">
+                  <i data-lucide="printer" class="w-4 h-4"></i> Print A4 Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Generated Report Output Container (Printable Area) -->
+        <div class="card printable-report-container" id="printable-report-card">
+          <div class="print-header-area">
+            <h2 id="print-rep-title">Comprehensive Business Performance Report</h2>
+            <p>Generated by CODEX on <span id="print-rep-date"></span> &bull; Period: <span id="print-rep-period">Last 30 days</span></p>
+          </div>
+          <div class="card-header no-print">
+            <div>
+              <h4 class="card-title" id="active-report-title-lbl">Active Report Result: Comprehensive Business Performance</h4>
+              <p class="card-subtitle" id="active-report-subtitle-lbl">Showing aggregated metrics, forecasts, pricing recommendations, and risk analysis.</p>
+            </div>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #10B981;">Ready to Export</span>
+          </div>
+          <div id="active-report-content-body" style="display: flex; flex-direction: column; gap: 20px;">
+            <!-- Dynamically populated report tables & summaries -->
+          </div>
+        </div>
+
+        <!-- Report History Table -->
         <div class="card">
-          <div class="card-header"><div><h4 class="card-title">Available Retail Reports</h4></div></div>
-          <table class="data-table">
-            <thead>
-              <tr><th>Report Name</th><th>Generated Date</th><th>Format</th><th>Action</th></tr>
-            </thead>
-            <tbody>
-              <tr><td><strong>Monthly Demand Forecast Summary (September 2026)</strong></td><td>Sep 25, 2026</td><td>PDF / CSV</td><td><button class="small-btn" onclick="showToast('Downloading report...')">Download</button></td></tr>
-              <tr><td><strong>Dynamic Pricing Audit Log Q3</strong></td><td>Sep 20, 2026</td><td>Excel</td><td><button class="small-btn" onclick="showToast('Downloading report...')">Download</button></td></tr>
-            </tbody>
-          </table>
+          <div class="card-header">
+            <div>
+              <h4 class="card-title"><i data-lucide="history" class="w-4 h-4 text-accent"></i> Report History & Archives</h4>
+              <p class="card-subtitle">Log of previously generated reports stored in local storage archive.</p>
+            </div>
+            <button class="small-btn delete-row-btn" onclick="clearReportHistory()" title="Clear archive">Clear History</button>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Report Name</th>
+                  <th>Report Type</th>
+                  <th>Period</th>
+                  <th>Generated Date</th>
+                  <th>Data Source</th>
+                  <th>Status</th>
+                  <th>Format</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="report-history-tbody">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 

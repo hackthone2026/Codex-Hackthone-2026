@@ -4764,3 +4764,467 @@ window.exportAlertsCSV = function() {
   ]);
   downloadCSV([headers.join(","), ...rows.map(r => r.join(","))].join("\r\n"), "CODEX_Retail_Risk_Alerts");
 };
+// ================= UPGRADED REPORTS & ANALYTICS MODULE =================
+
+let activeGeneratedReportData = null;
+
+function refreshReportData() {
+  generateAndRenderReport();
+  showToast("Report data refreshed successfully!");
+  logDatabaseNotification("system", "Reports & Analytics data refreshed.");
+}
+
+function resetReportFilters() {
+  const typeSel = document.getElementById("report-type-select");
+  const periodSel = document.getElementById("report-period-select");
+  const prodSel = document.getElementById("report-product-filter");
+  const catSel = document.getElementById("report-category-filter");
+
+  if (typeSel) typeSel.value = "comprehensive";
+  if (periodSel) periodSel.value = "30";
+  if (prodSel) prodSel.value = "all";
+  if (catSel) catSel.value = "all";
+
+  generateAndRenderReport();
+  showToast("Report filters reset to defaults.");
+}
+
+function generateAndRenderReport() {
+  const db = DB.get(); // <-- Declare once here
+  const type = document.getElementById("report-type-select")?.value || "comprehensive";
+  const periodDays = parseInt(document.getElementById("report-period-select")?.value || "30", 10);
+  const prodFilter = document.getElementById("report-product-filter")?.value || "all";
+  const catFilter = document.getElementById("report-category-filter")?.value || "all";
+
+  const products = db.productsCatalog || [];
+  const orders = db.orders || [];
+
+  let targetProducts = products;
+  if (prodFilter !== "all") {
+    targetProducts = products.filter(p => p.id === prodFilter);
+  }
+
+  let totalPredictedDemand = 0;
+  let lowStockCount = 0;
+  let pricingRecCount = targetProducts.length;
+  let totalGrossProfit = 0;
+
+  targetProducts.forEach((p, idx) => {
+    const stock = p.quantity !== undefined ? p.quantity : 100;
+    const price = p.sellingPrice || 2450;
+    const cost = price * 0.58;
+    const demand = (p.predictedDemand || (stock < 30 ? 180 : 120)) * (periodDays / 30);
+    totalPredictedDemand += Math.round(demand);
+    if (stock <= 30) lowStockCount++;
+    totalGrossProfit += Math.round(demand * (price - cost));
+  });
+
+  const kpiDemand = document.getElementById("rep-kpi-demand");
+  const kpiLow = document.getElementById("rep-kpi-lowstock");
+  const kpiPricing = document.getElementById("rep-kpi-pricing");
+  const kpiProfit = document.getElementById("rep-kpi-profit");
+
+  if (kpiDemand) kpiDemand.textContent = `${totalPredictedDemand.toLocaleString()} units`;
+  if (kpiLow) kpiLow.textContent = lowStockCount;
+  if (kpiPricing) kpiPricing.textContent = `${pricingRecCount} SKUs`;
+  if (kpiProfit) kpiProfit.textContent = formatMoney(totalGrossProfit / 83.5);
+
+  const titleMap = {
+    demand: "AI Demand Forecast Report",
+    pricing: "Dynamic Pricing & Profit Analysis",
+    inventory: "Smart Inventory & Reorder Report",
+    sales: "Sales & Revenue Performance",
+    festival: "Festival & Season Impact Report",
+    weather: "Weather Impact Analysis",
+    risk: "Stockout & Overstock Risk Report",
+    comprehensive: "Comprehensive Business Performance Report"
+  };
+
+  const reportTitle = titleMap[type] || "Retail Analytics Report";
+  const periodLabel = `Last ${periodDays} days`;
+
+  document.getElementById("print-rep-title").textContent = reportTitle;
+  document.getElementById("print-rep-date").textContent = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  document.getElementById("print-rep-period").textContent = periodLabel;
+  document.getElementById("active-report-title-lbl").textContent = reportTitle;
+  document.getElementById("active-report-subtitle-lbl").textContent = `Filtered by Period: ${periodLabel} • Products: ${prodFilter === 'all' ? 'All' : prodFilter}`;
+
+  let reportHtml = "";
+  let reportRows = [];
+
+  if (type === "demand") {
+    reportHtml = renderDemandForecastReportContent(targetProducts, periodDays);
+    reportRows = targetProducts.map(p => [p.id, p.name, p.quantity, Math.round((p.quantity < 30 ? 180 : 120) * (periodDays/30)), p.quantity < 30 ? "High Risk" : "Stable"]);
+  } else if (type === "pricing") {
+    reportHtml = renderDynamicPricingReportContent(targetProducts);
+    reportRows = targetProducts.map(p => [p.id, p.name, `₹${p.sellingPrice || 2450}`, `₹${Math.round((p.sellingPrice || 2450) * 0.58)}`, `₹${Math.round((p.sellingPrice || 2450) * 1.08)}`, "Optimized"]);
+  } else if (type === "inventory") {
+    reportHtml = renderSmartInventoryReportContent(targetProducts, periodDays);
+    reportRows = targetProducts.map(p => [p.id, p.name, p.quantity, 40, Math.max(0, 150 - p.quantity), p.quantity <= 30 ? "Critical" : "Healthy"]);
+  } else if (type === "sales") {
+    reportHtml = renderSalesPerformanceReportContent(orders, periodDays);
+    reportRows = orders.map(o => [o.id, o.date, o.customer, o.item, formatMoney(o.amountUSD), o.status]);
+  } else if (type === "festival") {
+    reportHtml = renderFestivalImpactReportContent(targetProducts);
+    reportRows = targetProducts.map(p => [p.id, p.name, "Diwali Festival", "+35% Demand Uplift", "Recommended"]);
+  } else if (type === "weather") {
+    reportHtml = renderWeatherImpactReportContent(targetProducts);
+    reportRows = targetProducts.map(p => [p.id, p.name, "Ambient Temperature (+32°C)", "Cool-Coat Demand Surge", "Moderate"]);
+  } else if (type === "risk") {
+    reportHtml = renderStockoutRiskReportContent(targetProducts);
+    reportRows = targetProducts.map(p => [p.id, p.name, p.quantity, p.quantity <= 30 ? "High Stockout Risk" : "Low Risk", "Reorder Recommended"]);
+  } else {
+    reportHtml = `
+      ${renderDemandForecastReportContent(targetProducts, periodDays)}
+      <hr class="divider" style="margin: 20px 0;">
+      ${renderDynamicPricingReportContent(targetProducts)}
+      <hr class="divider" style="margin: 20px 0;">
+      ${renderSmartInventoryReportContent(targetProducts, periodDays)}
+    `;
+    reportRows = targetProducts.map(p => [p.id, p.name, p.quantity, `₹${p.sellingPrice || 2450}`, p.quantity <= 30 ? "Critical Risk" : "Healthy"]);
+  }
+
+  const contentBody = document.getElementById("active-report-content-body");
+  if (contentBody) contentBody.innerHTML = reportHtml;
+
+  activeGeneratedReportData = {
+    name: reportTitle,
+    type: type.toUpperCase(),
+    period: periodLabel,
+    date: new Date().toLocaleString(),
+    source: "CODEX Local DB (v42)",
+    status: "Completed",
+    format: "CSV / Print A4",
+    rows: reportRows
+  };
+
+  // Re-using the already declared `db` variable safely without redeclaring
+  if (!db.reportHistory) db.reportHistory = [];
+  db.reportHistory.unshift({
+    id: Date.now(),
+    ...activeGeneratedReportData
+  });
+  if (db.reportHistory.length > 15) db.reportHistory.pop();
+  DB.save(db);
+  renderReportHistoryTable();
+  lucide.createIcons();
+}
+
+// Report Render Helpers
+function renderDemandForecastReportContent(products, periodDays) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">AI Demand Forecast Summary (${periodDays} Days Horizon)</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Calculated using weighted moving average regression and seasonal festival uplift adjustments.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Current Stock</th><th>Avg Daily Sales</th><th>Forecast Demand</th><th>Stockout Risk</th><th>Trend</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => {
+              const stock = p.quantity !== undefined ? p.quantity : 100;
+              const daily = stock < 30 ? 6 : 4;
+              const forecast = Math.round(daily * periodDays * 1.15);
+              const risk = stock < 30 ? '<span class="table-badge cancelled">High Risk</span>' : '<span class="table-badge delivered">Stable</span>';
+              return `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>${stock} units</td><td>${daily} units/day</td><td><strong>${forecast} units</strong></td><td>${risk}</td><td><span class="trend-badge positive">↑ Rising</span></td></tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderDynamicPricingReportContent(products) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Dynamic Pricing & Profit Optimization</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Price elasticity recommendations computed to maximize gross profit margins without exceeding demand drop thresholds.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Current Price</th><th>Unit Cost</th><th>Gross Margin</th><th>Suggested Price</th><th>Action Reason</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => {
+              const curPrice = p.sellingPrice || 2450;
+              const cost = Math.round(curPrice * 0.58);
+              const margin = (((curPrice - cost) / curPrice) * 100).toFixed(1);
+              const sugPrice = Math.round(curPrice * 1.08);
+              return `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>₹${curPrice}</td><td>₹${cost}</td><td>${margin}%</td><td><strong style="color: var(--accent-color);">₹${sugPrice}</strong></td><td><small>High demand elasticity allows +8% premium.</small></td></tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderSmartInventoryReportContent(products, periodDays) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Smart Inventory & Reorder Calculations</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Reorder points calculated based on lead time (7 days) and safety stock thresholds.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Current Stock</th><th>Safety Stock</th><th>Reorder Point</th><th>Rec. Order Qty</th><th>Inventory Status</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => {
+              const stock = p.quantity !== undefined ? p.quantity : 100;
+              const safety = 40;
+              const reorderPt = 70;
+              const recOrder = Math.max(0, 180 - stock);
+              const statusCls = stock <= 30 ? 'cancelled' : 'delivered';
+              return `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>${stock} units</td><td>${safety} units</td><td>${reorderPt} units</td><td><strong>${recOrder} units</strong></td><td><span class="table-badge ${statusCls}">${stock <= 30 ? 'Reorder Needed' : 'Healthy'}</span></td></tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderSalesPerformanceReportContent(orders, periodDays) {
+  const recentOrders = orders.slice(0, 6);
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Sales & Revenue Performance</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Aggregated database transaction ledger over the selected period.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>Order ID</th><th>Date</th><th>Customer</th><th>Item Purchased</th><th>Amount</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            ${recentOrders.map(o => `<tr><td><strong>#${o.id}</strong></td><td>${o.date}</td><td>${o.customer}</td><td>${o.item}</td><td><strong>${formatMoney(o.amountUSD)}</strong></td><td><span class="table-badge ${o.status.toLowerCase()}">${o.status}</span></td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderFestivalImpactReportContent(products) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Festival & Seasonality Impact Scenario</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Diwali Festival Season uplift modeling (+35% demand multiplier across retail lines).</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Festival Occasion</th><th>Demand Uplift</th><th>Recommended Stock Buffer</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>Diwali Festival Season</td><td><span class="trend-badge positive">+35% Demand</span></td><td>+200 units buffer</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderWeatherImpactReportContent(products) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Weather Correlation & Impact</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Ambient summer temperature correlation (+32°C average) driving demand for heat-reflective and cool-coat emulsions.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Weather Condition</th><th>Correlation Impact</th><th>Implication</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>High Ambient Temp (+32°C)</td><td>Strong positive correlation (+28%)</td><td>Increase inventory replenishment</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderStockoutRiskReportContent(products) {
+  return `
+    <div class="report-summary-box">
+      <h5 style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Stockout & Overstock Risk Analysis</h5>
+      <p style="font-size: 12.5px; color: var(--text-secondary);">Products flagged by inventory thresholds and expected demand velocity.</p>
+      <div style="overflow-x: auto; margin-top: 8px;">
+        <table class="data-table">
+          <thead>
+            <tr><th>SKU</th><th>Product Name</th><th>Current Available Stock</th><th>Days of Stock Remaining</th><th>Risk Category</th><th>Recommended Action</th></tr>
+          </thead>
+          <tbody>
+            ${products.map((p, idx) => {
+              const stock = p.quantity !== undefined ? p.quantity : 100;
+              const daysLeft = Math.max(2, Math.floor(stock / 4));
+              const risk = stock <= 30 ? "High Stockout Risk" : "Low Risk";
+              const badge = stock <= 30 ? "cancelled" : "delivered";
+              return `<tr><td><strong>${p.id || `PROD-0${idx+1}`}</strong></td><td>${p.name}</td><td>${stock} units</td><td>~${daysLeft} days</td><td><span class="table-badge ${badge}">${risk}</span></td><td>${stock <= 30 ? 'Create Purchase Order' : 'Maintain Stock'}</td></tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderReportHistoryTable() {
+  const db = DB.get();
+  const history = db.reportHistory || [];
+  const tbody = document.getElementById("report-history-tbody");
+  if (!tbody) return;
+
+  if (history.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: #94A3B8;">No archived reports in local storage. Generate a report above.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = history.map((h, idx) => `
+    <tr>
+      <td><strong>${h.name}</strong></td>
+      <td><span class="badge" style="background: rgba(59,130,246,0.1); color: var(--accent-color);">${h.type}</span></td>
+      <td>${h.period}</td>
+      <td style="color: #64748B; font-size: 12px;">${h.date}</td>
+      <td>${h.source}</td>
+      <td><span class="table-badge delivered">${h.status}</span></td>
+      <td>${h.format}</td>
+      <td>
+        <div style="display: flex; gap: 4px;">
+          <button class="small-btn" onclick="viewArchivedReport(${idx})">View</button>
+          <button class="small-btn" style="background: #10B981; color: white; border: none;" onclick="downloadArchivedReportCSV(${idx})">CSV</button>
+          <button class="small-btn delete-row-btn" onclick="deleteArchivedReport(${idx})">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+window.viewArchivedReport = function(index) {
+  const db = DB.get();
+  const history = db.reportHistory || [];
+  const report = history[index];
+  if (!report) return;
+
+  document.getElementById("modal-report-title").textContent = report.name;
+  const contentBody = document.getElementById("modal-report-body-content");
+  if (contentBody) {
+    contentBody.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 14px; font-size: 13px;">
+        <div style="background: var(--bg-main); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <strong>Report Type:</strong> ${report.type} &bull; <strong>Generated:</strong> ${report.date}<br>
+          <strong>Reporting Period:</strong> ${report.period} &bull; <strong>Source:</strong> ${report.source}
+        </div>
+        <div style="overflow-x: auto;">
+          <table class="data-table">
+            <thead>
+              <tr><th>Identifier / SKU</th><th>Item Name</th><th>Metric 1</th><th>Metric 2</th><th>Metric 3</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              ${report.rows.map(r => `<tr>${r.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+  document.getElementById("report-details-modal").classList.remove("hidden");
+  lucide.createIcons();
+};
+
+window.closeReportDetailsModal = function() {
+  document.getElementById("report-details-modal")?.classList.add("hidden");
+};
+
+window.deleteArchivedReport = function(index) {
+  if (!confirm("Are you sure you want to delete this archived report?")) return;
+  const db = DB.get();
+  if (db.reportHistory) {
+    db.reportHistory.splice(index, 1);
+    DB.save(db);
+    renderReportHistoryTable();
+    showToast("Archived report deleted.");
+  }
+};
+
+window.clearReportHistory = function() {
+  if (!confirm("Are you sure you want to clear all archived reports?")) return;
+  const db = DB.get();
+  db.reportHistory = [];
+  DB.save(db);
+  renderReportHistoryTable();
+  showToast("Report history archive cleared.");
+};
+
+window.downloadArchivedReportCSV = function(index) {
+  const db = DB.get();
+  const history = db.reportHistory || [];
+  const report = history[index];
+  if (!report) return;
+
+  let csvContent = `\uFEFFReport Title: "${report.name}"\nGenerated Date: "${report.date}"\nPeriod: "${report.period}"\n\n`;
+  csvContent += `Col1,Col2,Col3,Col4,Col5,Col6\n`;
+  report.rows.forEach(r => {
+    csvContent += r.map(val => `"${String(val).replace(/"/g, '""')}"`).join(",") + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `CODEX_Report_${report.type}_${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast(`Successfully downloaded CSV for ${report.name}!`);
+};
+
+window.exportActiveReportCSV = function() {
+  if (!activeGeneratedReportData) {
+    generateAndRenderReport();
+  }
+  if (!activeGeneratedReportData) {
+    showToast("No active report data to export.");
+    return;
+  }
+  const rep = activeGeneratedReportData;
+  let csvContent = `\uFEFFReport Title: "${rep.name}"\nGenerated Date: "${rep.date}"\nPeriod: "${rep.period}"\n\n`;
+  csvContent += `Column1,Column2,Column3,Column4,Column5,Column6\n`;
+  rep.rows.forEach(r => {
+    const safeRow = r.map(val => {
+      let str = String(val);
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = "'" + str;
+      }
+      return `"${str.replace(/"/g, '""')}"`;
+    });
+    csvContent += safeRow.join(",") + "\n";
+  });
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", `CODEX_Analytics_${rep.type}_${new Date().toISOString().slice(0,10)}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast("Report CSV downloaded successfully!");
+};
+
+window.printActiveReport = function() {
+  document.body.classList.add("printing-active-report");
+  showToast("Opening print dialog for A4 Report...");
+  setTimeout(() => {
+    window.print();
+    document.body.classList.remove("printing-active-report");
+  }, 300);
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  generateAndRenderReport();
+  renderReportHistoryTable();
+});

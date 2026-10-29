@@ -3944,3 +3944,117 @@ body.auth-mode .content-container {
 .dot-red { background-color: #EF4444; box-shadow: 0 0 6px rgba(239, 68, 68, 0.8); }
 .dot-green { background-color: #10B981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.8); }
 .dot-yellow { background-color: #F59E0B; box-shadow: 0 0 6px rgba(245, 158, 11, 0.8); }
+/* ================= REPORTS & ANALYTICS STYLES ================= */
+.printable-report-container {
+  background: var(--bg-card);
+}
+
+.report-summary-box {
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.report-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .report-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.report-stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.report-stat-card .lbl {
+  font-size: 11px;
+  color: #94A3B8;
+  font-weight: 600;
+}
+
+.report-stat-card .val {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+/* Print specific rules for Reports */
+@media print {
+  body.printing-active-report .sidebar,
+  body.printing-active-report .topbar,
+  body.printing-active-report .codex-ai-container,
+  body.printing-active-report .toast,
+  body.printing-active-report .no-print,
+  body.printing-active-report button,
+  body.printing-active-report .filter-controls,
+  body.printing-active-report .order-table-actions {
+    display: none !important;
+  }
+
+  body.printing-active-report #section-reports-analytics > *:not(#printable-report-card) {
+    display: none !important;
+  }
+
+  body.printing-active-report #printable-report-card {
+    visibility: visible !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+  }
+
+  body.printing-active-report #printable-report-card * {
+    visibility: visible !important;
+    color: #000000 !important;
+  }
+
+  body.printing-active-report .print-header-area {
+    display: block !important;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #0F172A;
+    padding-bottom: 12px;
+  }
+
+  body.printing-active-report .print-header-area h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0F172A;
+  }
+
+  body.printing-active-report .print-header-area p {
+    font-size: 12px;
+    color: #64748B;
+  }
+
+  body.printing-active-report .data-table th,
+  body.printing-active-report .data-table td {
+    border: 1px solid #CBD5E1 !important;
+    padding: 10px 12px !important;
+    background: #FFFFFF !important;
+  }
+
+  body.printing-active-report .data-table th {
+    background: #F1F5F9 !important;
+    font-weight: 700 !important;
+  }
+}
