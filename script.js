@@ -5749,3 +5749,29 @@ window.exportMarketIntelCSV = function() {
 document.addEventListener("DOMContentLoaded", () => {
   renderMarketIntelligenceSection();
 });
+window.navigateToSection = function(targetId) {
+  // ... existing navigation logic ...
+
+  document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
+  const sec = document.getElementById(`section-${targetId}`);
+  if (sec) {
+    sec.classList.add("active");
+  }
+
+  if (targetId === "calendar") renderKalnirnayCalendar();
+  if (targetId === "dynamic-pricing") {
+    renderDynamicPricingAdvisorTable();
+    initDynamicPricingChart();
+  }
+  if (targetId === "smart-inventory") {
+    renderSmartInventorySection();
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  // ... existing initialization ...
+  renderAllFromDB();
+  renderDynamicPricingAdvisorTable();
+  initDynamicPricingChart();
+});
