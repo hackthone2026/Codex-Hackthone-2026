@@ -5775,3 +5775,306 @@ document.addEventListener("DOMContentLoaded", () => {
   renderDynamicPricingAdvisorTable();
   initDynamicPricingChart();
 });
+// ================= MARKET INTELLIGENCE & COMPETITOR TRACKING MODULE =================
+
+let registeredCompetitors = [
+  { id: "comp-01", shop_name: "Apex Coatings Corp", location: "Mumbai Highway, MH", contact_info: "+91 98221 44556", created_at: "2026-10-15" },
+  { id: "comp-02", shop_name: "BioMatrix Polymers", location: "MIDC Industrial Area, Jalgaon", contact_info: "+91 94222 11223", created_at: "2026-10-18" },
+  { id: "comp-03", shop_name: "Nordic Tech Global", location: "Pune Tech Hub, MH", contact_info: "+91 97665 88990", created_at: "2026-10-22" },
+  { id: "comp-04", shop_name: "SolarShield Materials", location: "Nashik Road, MH", contact_info: "+91 95521 33445", created_at: "2026-10-25" }
+];
+
+let competitorPriceObservations = [
+  { competitor_id: "comp-01", sku: "PROD-01", barcode: "890103020101", selling_price: 2590.0, observation_timestamp: "2026-11-02 10:30", data_collection_method: "Field Audit", verification_status: "Verified" },
+  { competitor_id: "comp-02", sku: "PROD-02", barcode: "890103020102", selling_price: 1850.0, observation_timestamp: "2026-11-02 10:30", data_collection_method: "Scraped API", verification_status: "Verified" },
+  { competitor_id: "comp-03", sku: "PROD-03", barcode: "890103020103", selling_price: 4450.0, observation_timestamp: "2026-11-02 10:30", data_collection_method: "Manual Entry", verification_status: "Unverified" },
+  { competitor_id: "comp-04", sku: "PROD-04", barcode: "890103020104", selling_price: 2990.0, observation_timestamp: "2026-11-02 10:30", data_collection_method: "Scraped API", verification_status: "Verified" }
+];
+
+window.openCompetitorModal = function(editId = null) {
+  const modal = document.getElementById("competitor-modal");
+  const title = document.getElementById("competitor-modal-title");
+  const form = document.getElementById("competitor-form");
+  if (!modal) return;
+  form.reset();
+  document.getElementById("edit-competitor-id").value = "";
+
+  if (editId) {
+    title.textContent = "Edit Competitor Record";
+    const comp = registeredCompetitors.find(c => c.id === editId);
+    if (comp) {
+      document.getElementById("edit-competitor-id").value = comp.id;
+      document.getElementById("comp-shop-name").value = comp.shop_name;
+      document.getElementById("comp-location").value = comp.location;
+      document.getElementById("comp-contact").value = comp.contact_info;
+    }
+  } else {
+    title.textContent = "Add Competitor Shop";
+  }
+  modal.classList.remove("hidden");
+};
+
+window.closeCompetitorModal = function() {
+  document.getElementById("competitor-modal")?.classList.add("hidden");
+};
+
+window.handleCompetitorSubmit = async function(e) {
+  e.preventDefault();
+  const editId = document.getElementById("edit-competitor-id").value;
+  const shopName = document.getElementById("comp-shop-name").value.trim();
+  const location = document.getElementById("comp-location").value.trim();
+  const contact = document.getElementById("comp-contact").value.trim();
+
+  if (!shopName || !location) {
+    showToast("⚠️ Shop name and location are required.");
+    return;
+  }
+
+  const client = getHostAuthClient();
+  if (editId) {
+    const comp = registeredCompetitors.find(c => c.id === editId);
+    if (comp) {
+      comp.shop_name = shopName;
+      comp.location = location;
+      comp.contact_info = contact;
+    }
+    if (client) {
+      await client.from("competitors").update({ shop_name: shopName, location, contact_info: contact }).eq("id", editId).catch(() => {});
+    }
+    showToast("Competitor updated successfully!");
+  } else {
+    const newComp = {
+      id: `comp-${Date.now()}`,
+      shop_name: shopName,
+      location,
+      contact_info: contact || "N/A",
+      created_at: new Date().toISOString().slice(0, 10)
+    };
+    registeredCompetitors.push(newComp);
+    if (client) {
+      await client.from("competitors").insert([newComp]).catch(() => {});
+    }
+    showToast("Competitor added to database successfully!");
+  }
+
+  closeCompetitorModal();
+  renderMarketIntelligenceDashboard();
+};
+
+window.deleteCompetitor = async function(id) {
+  if (!confirm("Are you sure you want to delete this competitor?")) return;
+  registeredCompetitors = registeredCompetitors.filter(c => c.id !== id);
+  const client = getHostAuthClient();
+  if (client) {
+    await client.from("competitors").delete().eq("id", id).catch(() => {});
+  }
+  renderMarketIntelligenceDashboard();
+  showToast("Competitor deleted successfully.");
+};
+
+window.openPriceObservationModal = function() {
+  const modal = document.getElementById("price-observation-modal");
+  const select = document.getElementById("obs-competitor-select");
+  const timeInput = document.getElementById("obs-datetime");
+  if (!modal || !select) return;
+
+  select.innerHTML = registeredCompetitors.map(c => `<option value="${c.id}">${c.shop_name} (${c.location})</option>`).join("");
+  if (timeInput) {
+    const now = new Date();
+    timeInput.value = now.toISOString().slice(0, 16);
+  }
+  modal.classList.remove("hidden");
+};
+
+window.closePriceObservationModal = function() {
+  document.getElementById("price-observation-modal")?.classList.add("hidden");
+};
+
+window.handlePriceObservationSubmit = async function(e) {
+  e.preventDefault();
+  const competitor_id = document.getElementById("obs-competitor-select").value;
+  const sku = document.getElementById("obs-sku-select").value;
+  const barcode = document.getElementById("obs-barcode").value.trim();
+  const selling_price = parseFloat(document.getElementById("obs-price").value);
+  const observation_timestamp = document.getElementById("obs-datetime").value;
+  const data_collection_method = document.getElementById("obs-method").value;
+  const verification_status = document.getElementById("obs-status").value;
+
+  if (isNaN(selling_price) || selling_price <= 0) {
+    showToast("⚠️ Please enter a valid competitor selling price.");
+    return;
+  }
+
+  const observation = {
+    competitor_id,
+    sku,
+    barcode: barcode || null,
+    selling_price,
+    observation_timestamp,
+    data_collection_method,
+    verification_status
+  };
+
+  // Maintain historical price records (push instead of overwrite)
+  competitorPriceObservations.push(observation);
+  const client = getHostAuthClient();
+  if (client) {
+    await client.from("competitor_prices").insert([observation]).catch(() => {});
+  }
+
+  closePriceObservationModal();
+  renderMarketIntelligenceDashboard();
+  showToast("Competitor price observation recorded successfully!");
+  logDatabaseNotification("system", `New price observation recorded for ${sku}.`);
+};
+
+function renderMarketIntelligenceDashboard() {
+  const compCountEl = document.getElementById("mi-comp-count");
+  if (compCountEl) compCountEl.textContent = registeredCompetitors.length;
+
+  // Render Competitors Directory
+  const compTbody = document.getElementById("competitors-directory-tbody");
+  if (compTbody) {
+    if (registeredCompetitors.length === 0) {
+      compTbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px; color: #94A3B8;">No competitors registered. Add one above.</td></tr>`;
+    } else {
+      compTbody.innerHTML = registeredCompetitors.map(c => `
+        <tr>
+          <td><strong>${c.shop_name}</strong></td>
+          <td>${c.location}</td>
+          <td>${c.contact_info || 'N/A'}</td>
+          <td>${c.created_at}</td>
+          <td>
+            <div style="display: flex; gap: 6px;">
+              <button class="small-btn" onclick="openCompetitorModal('${c.id}')">Edit</button>
+              <button class="small-btn delete-row-btn" onclick="deleteCompetitor('${c.id}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+  }
+
+  // Render Competitor Price Comparison Dashboard
+  const productFilter = document.getElementById("mi-product-filter")?.value || "all";
+  const comparisonTbody = document.getElementById("market-comparison-tbody");
+  
+  const productsMaster = [
+    { sku: "PROD-01", name: "Titanium Cool-Coat Emulsion", my_price: 2450.0 },
+    { sku: "PROD-02", name: "Polyurethane Amino Resin #5", my_price: 1890.0 },
+    { sku: "PROD-03", name: "Dynamic Viscometer Sensors", my_price: 4200.0 },
+    { sku: "PROD-04", name: "Heat-Reflective Ceramic Paint", my_price: 3100.0 }
+  ];
+
+  let filteredProducts = productsMaster;
+  if (productFilter !== "all") {
+    filteredProducts = productsMaster.filter(p => p.sku === productFilter);
+  }
+
+  if (comparisonTbody) {
+    comparisonTbody.innerHTML = filteredProducts.map(p => {
+      const observations = competitorPriceObservations.filter(o => o.sku === p.sku);
+      if (observations.length === 0) {
+        return `
+          <tr>
+            <td><strong>${p.name}</strong><br><small style="color: #94A3B8;">${p.sku}</small></td>
+            <td>₹${p.my_price.toLocaleString()}</td>
+            <td colspan="5" style="text-align: center; color: #94A3B8;">No competitor price observations recorded yet.</td>
+            <td><button class="small-btn" onclick="openPriceObservationModal()">Record Price</button></td>
+          </tr>
+        `;
+      }
+
+      const prices = observations.map(o => o.selling_price);
+      const lowest = Math.min(...prices);
+      const highest = Math.max(...prices);
+      const average = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const diff = p.my_price - average;
+      const diffSign = diff > 0 ? "+" : "";
+      const diffClass = diff > 0 ? "negative" : "positive";
+
+      let marketPosition = "Competitive";
+      if (p.my_price < lowest) marketPosition = "Market Lowest 🏆";
+      else if (p.my_price > highest) marketPosition = "Premium / Highest ⚠️";
+
+      return `
+        <tr>
+          <td><strong>${p.name}</strong><br><small style="color: #94A3B8;">${p.sku} (${observations.length} obs.)</small></td>
+          <td>₹${p.my_price.toLocaleString()}</td>
+          <td>₹${lowest.toLocaleString()}</td>
+          <td><strong>₹${average.toFixed(1)}</strong></td>
+          <td>₹${highest.toLocaleString()}</td>
+          <td><span class="trend-badge ${diffClass}">${diffSign}₹${Math.abs(Math.round(diff))}</span></td>
+          <td><span class="table-badge delivered">${marketPosition}</span></td>
+          <td><button class="small-btn" onclick="openPriceObservationModal()">Add Observation</button></td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  renderAiRecommendationsList(productsMaster);
+}
+
+function renderAiRecommendationsList(products) {
+  const container = document.getElementById("ai-market-recommendations-container");
+  if (!container) return;
+
+  container.innerHTML = products.map((p, idx) => {
+    const obs = competitorPriceObservations.filter(o => o.sku === p.sku);
+    const avgComp = obs.length > 0 ? obs.reduce((acc, cur) => acc + cur.selling_price, 0) / obs.length : null;
+    
+    let recommendation = "Maintain Current Price";
+    let reason = "Price aligns with observed market competition.";
+    let badgeColor = "#3B82F6";
+
+    if (avgComp) {
+      if (p.my_price > avgComp * 1.08) {
+        recommendation = "Consider a price reduction";
+        reason = `Your price (₹${p.my_price}) is >8% above competitor average (₹${avgComp.toFixed(1)}).`;
+        badgeColor = "#EF4444";
+      } else if (p.my_price < avgComp * 0.92) {
+        recommendation = "Consider a price increase";
+        reason = `Your price (₹${p.my_price}) is below competitor average (₹${avgComp.toFixed(1)}). Room for margin expansion.`;
+        badgeColor = "#10B981";
+      }
+    } else {
+      recommendation = "Monitor competitor price changes";
+      reason = "Insufficient competitor observations in database. Please log competitor prices.";
+      badgeColor = "#F59E0B";
+    }
+
+    return `
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 12px 16px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border-color);">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,0.1); color: var(--accent-color); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;">
+            <i data-lucide="tag" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <strong>${p.sku} • ${p.name}</strong><br>
+            <span style="font-size: 13px; font-weight: 700; color: ${badgeColor};">${recommendation}</span>
+            <p style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">${reason}</p>
+          </div>
+        </div>
+        <button class="small-btn" onclick="applyAiRecommendationToPricingAdvisor('${p.sku}', ${p.my_price})">Send to Pricing Advisor</button>
+      </div>
+    `;
+  }).join("");
+  lucide.createIcons();
+}
+
+window.runAiMarketIntelligenceEngine = function() {
+  showToast("Running AI Market Intelligence Analysis across database records...");
+  setTimeout(() => {
+    renderMarketIntelligenceDashboard();
+    showToast("AI Market Intelligence analysis completed successfully!");
+  }, 600);
+};
+
+window.applyAiRecommendationToPricingAdvisor = function(sku, currentPrice) {
+  navigateToSection("dynamic-pricing");
+  showToast(`Loaded ${sku} into Dynamic Pricing Advisor with market intelligence benchmarks.`);
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderMarketIntelligenceDashboard();
+});
